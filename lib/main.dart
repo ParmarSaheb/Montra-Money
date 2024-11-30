@@ -1,5 +1,6 @@
 import 'package:firebase_core/firebase_core.dart';
 import 'package:flutter/material.dart';
+import 'package:flutter/services.dart';
 import 'package:flutter_bloc/flutter_bloc.dart';
 import 'package:google_fonts/google_fonts.dart';
 import 'package:montra_clone/app/routes/router/router.dart';
@@ -7,6 +8,8 @@ import 'package:montra_clone/app_ui/theme/responsive_theme.dart';
 import 'package:montra_clone/app_ui/theme/theme_bloc.dart';
 import 'package:montra_clone/core/repository/authentication_repository.dart';
 import 'package:montra_clone/firebase_options.dart';
+
+import 'core/utils/size_config.dart';
 
 Future<void> main() async {
   WidgetsFlutterBinding.ensureInitialized();
@@ -22,6 +25,12 @@ class App extends StatelessWidget {
 
   @override
   Widget build(BuildContext context) {
+    SystemChrome.setPreferredOrientations([
+      DeviceOrientation.portraitUp,
+      DeviceOrientation.portraitDown,
+    ]);
+
+    SizeConfig.init(context);
     return AppResponsiveTheme(
       child: BlocProvider(
         create: (context) => ThemeBloc(),
@@ -32,6 +41,12 @@ class App extends StatelessWidget {
               child: MaterialApp.router(
                 routerConfig: _router.config(),
                 debugShowCheckedModeBanner: false,
+                builder: (context, child) {
+                  return MediaQuery(
+                    data: MediaQuery.of(context).copyWith(textScaler: const TextScaler.linear(1.0)),
+                    child: child!,
+                  );
+                },
                 theme: ThemeData(
                   fontFamily: GoogleFonts.inter().fontFamily,
                 ),

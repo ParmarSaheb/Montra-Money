@@ -18,7 +18,7 @@ class IncomeExpenseContainer extends StatelessWidget {
   @override
   Widget build(BuildContext context) {
     return Container(
-      height: MediaQuery.sizeOf(context).height * (0.4),
+      height: MediaQuery.sizeOf(context).height * (0.25),
       decoration: BoxDecoration(
         gradient: LinearGradient(
           colors: [
@@ -33,63 +33,46 @@ class IncomeExpenseContainer extends StatelessWidget {
           bottomRight: Radius.circular(50),
         ),
       ),
-      child: SafeArea(
-        child: Padding(
-          padding: const EdgeInsets.symmetric(horizontal: 10),
-          child: Column(
-            mainAxisAlignment: MainAxisAlignment.spaceBetween,
-            children: [
-              Row(
-                mainAxisAlignment: MainAxisAlignment.spaceBetween,
-                children: [
-                  Image.asset(
-                    appLogo,
-                    height: 70,
-                    width: 140,
-                  ),
-                  Icon(
-                    Icons.notifications,
-                    size: 35,
-                    color: AppColors.instance.violet80,
-                  )
-                ],
+      child: Padding(
+        padding: const EdgeInsets.symmetric(horizontal: 10),
+        child: Column(
+          mainAxisAlignment: MainAxisAlignment.spaceEvenly,
+          children: [
+            Text(
+              'Total Balance',
+              style: TextStyle(
+                color: AppColors.instance.dark25,
+                fontSize: 15,
+                // fontFamily:
               ),
-              Text(
-                'Total Balance',
-                style: TextStyle(
-                  color: AppColors.instance.dark25,
-                  fontSize: 15,
-                  // fontFamily:
+            ),
+            Text(
+              totalBudget >= 0 ? '\u{20B9}${totalBudget.toStringAsFixed(2)}'
+                  : '- \u{20B9}${totalBudget.abs().toStringAsFixed(2)}',
+              style: const TextStyle(
+                fontSize: 30,
+                fontWeight: FontWeight.bold,
+              ),
+            ),
+            Row(
+              mainAxisAlignment: MainAxisAlignment.spaceEvenly,
+              children: [
+                PriceCard(
+                  iconPath: incomeIcon,
+                  color: AppColors.instance.green100,
+                  label: 'Income',
+                  price: '\u{20B9}${income.toStringAsFixed(1)}',
                 ),
-              ),
-              Text(
-                totalBudget >= 0
-                    ? '\u{20B9}${totalBudget.toStringAsFixed(2)}'
-                    : '- \u{20B9}${totalBudget.abs().toStringAsFixed(2)}',
-                style: const TextStyle(
-                  fontSize: 30,
-                  fontWeight: FontWeight.bold,
+                PriceCard(
+                  iconPath: expenseIcon,
+                  color: AppColors.instance.red100,
+                  label: 'Expenses',
+                  price: '\u{20B9}${expense.toStringAsFixed(1)}',
                 ),
-              ),
-              Row(
-                mainAxisAlignment: MainAxisAlignment.spaceEvenly,
-                children: [
-                  PriceCard(
-                    iconPath: incomeIcon,
-                    color: AppColors.instance.green100,
-                    label: 'Income',
-                    price: '\u{20B9}${income.toStringAsFixed(1)}',
-                  ),
-                  PriceCard(
-                    iconPath: expenseIcon,
-                    color: AppColors.instance.red100,
-                    label: 'Expenses',
-                    price: '\u{20B9}${expense.toStringAsFixed(1)}',
-                  ),
-                ],
-              ),
-            ],
-          ),
+              ],
+            ),
+            SizedBox(height: 15),
+          ],
         ),
       ),
     );

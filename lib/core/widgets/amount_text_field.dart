@@ -1,5 +1,6 @@
 import 'package:flutter/material.dart';
 import 'package:montra_clone/app/app_colors.dart';
+import 'package:montra_clone/core/utils/double_input_formatter.dart';
 
 final textStyle = TextStyle(color: AppColors.instance.light80, fontSize: 64);
 
@@ -24,6 +25,7 @@ class AmountTextField extends StatelessWidget {
         style: textStyle,
         onChanged: (value) => onChanged(value),
         keyboardType: TextInputType.number,
+        inputFormatters: [DoubleInputFormatter()],
         decoration: InputDecoration(
           border: InputBorder.none,
           hintText: '0',

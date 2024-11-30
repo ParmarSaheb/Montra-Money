@@ -1,13 +1,14 @@
 import 'package:auto_route/auto_route.dart';
 import 'package:flutter/material.dart';
 import 'package:flutter_bloc/flutter_bloc.dart';
-import 'package:montra_clone/core/utils/fire_store_queries.dart';
 import 'package:montra_clone/app/routes/router/router.gr.dart';
 import 'package:montra_clone/core/utils/custom_snackbar.dart';
+import 'package:montra_clone/core/utils/fire_store_queries.dart';
 import 'package:montra_clone/modules/home/bloc/home_bloc.dart';
 import 'package:montra_clone/modules/home/widgets/expense_tracker_card.dart';
-import 'package:montra_clone/modules/home/widgets/income_expense_container.dart';
 import 'package:montra_clone/modules/home/widgets/filter_row.dart';
+import 'package:montra_clone/modules/home/widgets/home_app_bar.dart';
+import 'package:montra_clone/modules/home/widgets/income_expense_container.dart';
 import 'package:montra_clone/modules/home/widgets/view_all_data_raw.dart';
 
 @RoutePage()
@@ -50,18 +51,26 @@ class _HomeScreenState extends State<HomeScreen> {
       },
       builder: (context, state) {
         return Scaffold(
+          appBar: HomeAppBar(),
+            body: NestedScrollView(
+          headerSliverBuilder: (context, innerBoxIsScrolled) {
+            return [
+              SliverToBoxAdapter(
+                child: IncomeExpenseContainer(
+                  totalBudget: state.totalAccountBalance,
+                  income: state.totalIncome,
+                  expense: state.totalExpense,
+                ),
+              )
+            ];
+          },
           body: Column(
             children: [
-              IncomeExpenseContainer(
-                totalBudget: state.totalAccountBalance,
-                income: state.totalIncome,
-                expense: state.totalExpense,
-              ),
               const FilterRow(),
               ViewAllDataRaw(
-                onViewAppTap: () =>
-                    context.router.push(const ViewAllDataRoute()),
+                onViewAppTap: () => context.router.push(const ViewAllDataRoute()),
               ),
+              SizedBox(height: 10),
               Expanded(
                 child: state.status == HomeStateStatus.transactionDataLoading
                     ? const Center(child: CircularProgressIndicator())
@@ -69,48 +78,43 @@ class _HomeScreenState extends State<HomeScreen> {
                         ? state.transactionList.isEmpty
                             ? Center(
                                 child: Text(switch (state.filterName) {
-                                  'Today' =>
-                                    'You have not added any transactions today',
+                                  'Today' => 'You have not added any transactions today',
                                   'Week' => 'No transactions in this week',
                                   'Month' => 'No transactions in this month',
                                   String() => 'No transactions in this Year',
                                 }),
                               )
-                            : ListView.builder(
-                                padding:
-                                    const EdgeInsets.symmetric(horizontal: 12),
-                                itemCount: state.transactionList.length,
-                                itemBuilder: (context, index) {
-                                  return ExpenseTrackerCard(
-                                    category:
-                                        state.transactionList[index].category,
-                                    isExpense:
-                                        state.transactionList[index].isExpense,
-                                    amount: state.transactionList[index]
-                                        .transactionAmount,
-                                    description: state
-                                        .transactionList[index].description,
-                                    createdAt: FireStoreQueries.instance
-                                        .getFormatedDate(state
-                                            .transactionList[index].createdAt),
-                                    onCardTap: () {
-                                      context.router.push(
-                                        ExpenseTrackerRoute(
-                                          isExpense: state
-                                              .transactionList[index].isExpense,
-                                          transactionModel:
-                                              state.transactionList[index],
-                                        ),
+                            : ListView(
+                                padding: const EdgeInsets.symmetric(horizontal: 12),
+                                children: [
+                                  ...List.generate(
+                                    state.transactionList.length,
+                                    (index) {
+                                      return ExpenseTrackerCard(
+                                        category: state.transactionList[index].category,
+                                        isExpense: state.transactionList[index].isExpense,
+                                        amount: state.transactionList[index].transactionAmount,
+                                        description: state.transactionList[index].description,
+                                        createdAt: FireStoreQueries.instance.getFormatedDate(state.transactionList[index].createdAt),
+                                        onCardTap: () {
+                                          context.router.push(
+                                            ExpenseTrackerRoute(
+                                              isExpense: state.transactionList[index].isExpense,
+                                              transactionModel: state.transactionList[index],
+                                            ),
+                                          );
+                                        },
                                       );
                                     },
-                                  );
-                                },
+                                  ),
+                                  SizedBox(height: 130),
+                                ],
                               )
                         : const Text('Could not load transactions'),
               ),
             ],
           ),
-        );
+        ));
       },
     );
   }
