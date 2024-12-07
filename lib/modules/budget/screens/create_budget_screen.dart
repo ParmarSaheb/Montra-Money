@@ -51,7 +51,7 @@ class CreateBudgetScreen extends StatelessWidget implements AutoRouteWrapper {
       listener: (context, state) async {
         if (state.status == BudgetStateStatus.failure) {
           ScaffoldMessenger.of(context).hideCurrentSnackBar();
-          showTheSnackBar(
+          showToast(
             message: state.errorMessage,
             context: context,
             isBehaviourFloating: false,

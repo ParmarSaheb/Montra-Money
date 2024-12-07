@@ -5,9 +5,9 @@ import 'package:montra_clone/app/app_colors.dart';
 import 'package:montra_clone/app/routes/router/router.gr.dart';
 import 'package:montra_clone/core/repository/authentication_repository.dart';
 import 'package:montra_clone/core/utils/custom_snackbar.dart';
+import 'package:montra_clone/core/widgets/alert_message_container.dart';
 import 'package:montra_clone/modules/profile/bloc/profile_bloc.dart';
 import 'package:montra_clone/modules/profile/widgets/custom_container.dart';
-import 'package:montra_clone/core/widgets/alert_message_container.dart';
 import 'package:montra_clone/modules/profile/widgets/user_info_row.dart';
 
 @RoutePage()
@@ -57,7 +57,7 @@ class _ProfileScreenState extends State<ProfileScreen> {
         if (state.status == ProfileStateStatus.success) {
           context.router.replaceAll([const LoginRoute()]);
         } else if (state.status == ProfileStateStatus.failure) {
-          return showTheSnackBar(
+          return showToast(
             message: 'Could not logout! Please try again later',
             context: context,
             isBehaviourFloating: true,
@@ -78,21 +78,16 @@ class _ProfileScreenState extends State<ProfileScreen> {
                     userName: state.userName ?? 'Unknown',
                     userEmail: state.userEmail ?? '',
                     onEditIconTap: () async {
-                      await context.pushRoute(
-                        EditUserInfoRoute(
-                          name: state.userName ?? 'Unknown',
-                        ),
-                      );
+                      await context.pushRoute(EditUserInfoRoute(name: state.userName ?? 'Unknown'));
                     },
                   );
                 },
               ),
               const SizedBox(height: 30),
               CustomContainer(
-                onAccountTap: () {},
+                onCategoriesTap: () => context.router.push(const CategoriesRoute()),
                 onSettingsTap: () => context.router.push(const SettingRoute()),
-                onLogoutTap: () =>
-                    _showLogoutBottomSheet(bottomSheetContext: context),
+                onLogoutTap: () => _showLogoutBottomSheet(bottomSheetContext: context),
               ),
             ],
           ),

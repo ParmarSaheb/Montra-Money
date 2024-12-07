@@ -41,7 +41,7 @@ class ExpenseTrackerBloc
         description: description,
         transactionAmount: amount,
         isValid: Formz.validate(
-          [description, amount],
+          [amount],
         ),
       ),
     );

@@ -29,7 +29,7 @@ class _SplashScreenState extends State<SplashScreen>
   void setAnimation() {
     animationController = AnimationController(
       vsync: this,
-      duration: const Duration(seconds: 2),
+      duration: const Duration(seconds: 1),
     );
     animation = Tween<double>(
       begin: 0,
@@ -40,13 +40,13 @@ class _SplashScreenState extends State<SplashScreen>
         setState(() {
           shouldShowText = true;
         });
-        Future.delayed(const Duration(seconds: 2));
+        Future.delayed(const Duration(seconds: 1));
       },
     );
   }
 
   Future<void> navigateToAppropriateRoute() async {
-    await Future.delayed(const Duration(seconds: 4));
+    await Future.delayed(const Duration(seconds: 1));
     final prefs = await SharedPreferences.getInstance();
     bool isOpenedFirstTime = prefs.getBool('isOpenedFirstTime') ?? true;
     if (isOpenedFirstTime) {

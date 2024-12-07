@@ -43,6 +43,7 @@ class AppRouter extends RootStackRouter {
         AutoRoute(page: SettingRoute.page),
         AutoRoute(page: CurrencyRoute.page),
         AutoRoute(page: LanguageRoute.page),
+        AutoRoute(page: CategoriesRoute.page),
         AutoRoute(page: EditUserInfoRoute.page, path: '/:name'),
 
         /// SubRoutes of transaction route

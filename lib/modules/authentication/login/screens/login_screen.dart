@@ -59,7 +59,7 @@ class _LoginScreenState extends State<LoginScreen> {
       listenWhen: (previous, current) => previous.status != current.status,
       listener: (context, state) async {
         if (state.status == LoginStateStatus.failure) {
-          return showTheSnackBar(
+          return showToast(
               message: state.error,
               context: context,
               isBehaviourFloating: false);
@@ -68,7 +68,7 @@ class _LoginScreenState extends State<LoginScreen> {
         } else if (state.status == LoginStateStatus.success) {
           await context.router.replaceAll([const BottomNavigationBarRoute()]);
         } else if (state.status == LoginStateStatus.emailSent) {
-          return showTheSnackBar(
+          return showToast(
             message: 'We have sent you a verification email,Please check inbox',
             context: context,
             isBehaviourFloating: false,

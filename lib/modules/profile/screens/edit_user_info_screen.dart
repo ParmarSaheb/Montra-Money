@@ -30,7 +30,7 @@ class EditUserInfoScreen extends StatelessWidget implements AutoRouteWrapper {
       listener: (context, state) async {
         if (state.status == ProfileStateStatus.failure) {
           ScaffoldMessenger.of(context).hideCurrentSnackBar();
-          showTheSnackBar(
+          showToast(
             message: 'Something went wrong',
             context: context,
             isBehaviourFloating: false,

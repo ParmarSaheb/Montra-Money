@@ -8,18 +8,25 @@ class CustomTextField extends StatelessWidget {
     required this.errorWidget,
     required this.onChanged,
     required this.initialValue,
+    this.autoFocus = false,
+    this.isDesc = false,
   });
 
   final String hintText;
   final Widget? errorWidget;
   final Function(String) onChanged;
   final String? initialValue;
+  final bool autoFocus;
+  final bool isDesc;
 
   @override
   Widget build(BuildContext context) {
     return TextFormField(
       initialValue: initialValue,
       onChanged: (value) => onChanged(value),
+      autofocus: autoFocus,
+      maxLines: isDesc ? 4 : null,
+      keyboardType: isDesc ? TextInputType.multiline : null,
       decoration: InputDecoration(
         border: OutlineInputBorder(borderRadius: BorderRadius.circular(16)),
         hintText: hintText,
@@ -27,7 +34,7 @@ class CustomTextField extends StatelessWidget {
         error: errorWidget,
         contentPadding: const EdgeInsets.symmetric(
           horizontal: 20,
-          vertical: 18,
+          vertical: 13,
         ),
       ),
     );

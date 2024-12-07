@@ -61,6 +61,7 @@ dependencies:
   widgetbook: ^3.9.0
   circle_nav_bar: ^2.1.1
   stylish_bottom_bar: ^1.1.0
+  fluttertoast: ^8.2.8
 
 
 dev_dependencies:
@@ -110,6 +111,7 @@ flutter:
     - assets/icons/transaction_icon/
     - assets/icons/financial_report_icons/
     - assets/icons/expense_income_icons/
+    - assets/icons/category_png_icons/
   #   - images/a_dot_ham.jpeg
 
   # An image asset can refer to one or more resolution-specific "variants", see

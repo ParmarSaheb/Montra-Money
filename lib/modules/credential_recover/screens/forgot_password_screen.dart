@@ -31,7 +31,7 @@ class ForgotPasswordScreen extends StatelessWidget implements AutoRouteWrapper {
     return BlocListener<ResetPasswordBloc, ResetPasswordState>(
       listener: (context, state) {
         if (state.status == ResetPasswordStateStatus.failure) {
-          return showTheSnackBar(
+          return showToast(
             message: 'Something went wrong, Please Try again later',
             context: context,
             isBehaviourFloating: false,

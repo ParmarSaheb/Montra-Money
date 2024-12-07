@@ -39,13 +39,13 @@ class SignupScreen extends StatelessWidget implements AutoRouteWrapper {
       listenWhen: (previous, current) => previous.status != current.status,
       listener: (context, state) {
         if (state.status == SignUpStateStatus.isNotChecked) {
-          return showTheSnackBar(
+          return showToast(
             message: 'Please read and check the privacy policy',
             context: context,
             isBehaviourFloating: false,
           );
         } else if (state.status == SignUpStateStatus.failure) {
-          return showTheSnackBar(
+          return showToast(
               message: state.error,
               context: context,
               isBehaviourFloating: false);

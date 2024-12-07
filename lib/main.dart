@@ -8,14 +8,21 @@ import 'package:montra_clone/app_ui/theme/responsive_theme.dart';
 import 'package:montra_clone/app_ui/theme/theme_bloc.dart';
 import 'package:montra_clone/core/repository/authentication_repository.dart';
 import 'package:montra_clone/firebase_options.dart';
+import 'package:montra_clone/modules/categories/bloc/categories_bloc.dart';
 
+import 'core/utils/logging_bloc_observer.dart';
 import 'core/utils/size_config.dart';
 
 Future<void> main() async {
   WidgetsFlutterBinding.ensureInitialized();
-  await Firebase.initializeApp(
-      options: DefaultFirebaseOptions.currentPlatform, name: 'Updated');
-  runApp(App());
+  await Firebase.initializeApp(options: DefaultFirebaseOptions.currentPlatform, name: 'Updated');
+  Bloc.observer = LoggingBlocObserver();
+  runApp(MultiBlocProvider(
+    providers: [
+      BlocProvider(create: (context) => CategoriesBloc()),
+    ],
+    child: App(),
+  ));
 }
 
 class App extends StatelessWidget {

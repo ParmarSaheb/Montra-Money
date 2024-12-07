@@ -68,7 +68,7 @@ class _DetailBudgetScreenState extends State<DetailBudgetScreen> {
     return BlocListener<BudgetBloc, BudgetState>(
       listener: (context, state) async {
         if (state.status == BudgetStateStatus.failure) {
-          return showTheSnackBar(
+          return showToast(
             message: state.errorMessage,
             context: context,
             isBehaviourFloating: false,

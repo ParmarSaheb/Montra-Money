@@ -42,7 +42,7 @@ class _HomeScreenState extends State<HomeScreen> {
     return BlocConsumer<HomeBloc, HomeState>(
       listener: (context, state) {
         if (state.status == HomeStateStatus.failure) {
-          return showTheSnackBar(
+          return showToast(
             message: state.errorMessage,
             context: context,
             isBehaviourFloating: true,

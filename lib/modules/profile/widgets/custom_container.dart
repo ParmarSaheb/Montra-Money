@@ -6,19 +6,18 @@ import 'package:montra_clone/app/image_paths.dart';
 class CustomContainer extends StatelessWidget {
   const CustomContainer({
     super.key,
-    required this.onAccountTap,
+    required this.onCategoriesTap,
     required this.onSettingsTap,
     required this.onLogoutTap,
   });
 
-  final VoidCallback onAccountTap;
+  final VoidCallback onCategoriesTap;
   final VoidCallback onSettingsTap;
   final VoidCallback onLogoutTap;
 
   @override
   Widget build(BuildContext context) {
     return Container(
-      height: 290,
       width: double.infinity,
       decoration: BoxDecoration(
         color: AppColors.instance.light100,
@@ -29,9 +28,9 @@ class CustomContainer extends StatelessWidget {
         children: [
           _CustomListTile(
             isLogoutTile: false,
-            label: 'Account',
+            label: 'Categories',
             imagePath: walletIconPath,
-            onTap: onAccountTap,
+            onTap: onCategoriesTap,
           ),
           Divider(
             color: AppColors.instance.light20,

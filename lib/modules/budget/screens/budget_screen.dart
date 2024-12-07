@@ -41,7 +41,7 @@ class _BudgetScreenState extends State<BudgetScreen> {
       listenWhen: (previous, current) => previous.status != current.status,
       listener: (context, state) {
         if (state.status == BudgetStateStatus.failure) {
-          showTheSnackBar(message: state.errorMessage, context: context, isBehaviourFloating: true);
+          showToast(message: state.errorMessage, context: context, isBehaviourFloating: true);
         }
       },
       child: Container(
@@ -65,15 +65,16 @@ class _BudgetScreenState extends State<BudgetScreen> {
                     ),
                     child: ListView(
                       padding: const EdgeInsets.symmetric(horizontal: 16),
+                      physics: NeverScrollableScrollPhysics(),
                       shrinkWrap: true,
                       children: [
                         if (state.status == BudgetStateStatus.loading) ...[
-                          const Spacer(),
+                          // const Spacer(),
                           const Center(child: CircularProgressIndicator()),
-                          const Spacer()
+                          // const Spacer()
                         ] else if (state.status == BudgetStateStatus.success) ...[
                           if (state.budgetDataModelList.isEmpty) ...[
-                            const Spacer(),
+                            // const Spacer(),
                             Center(
                               child: Text(
                                 createBudget,
@@ -84,7 +85,7 @@ class _BudgetScreenState extends State<BudgetScreen> {
                                 ),
                               ),
                             ),
-                            const Spacer(),
+                            // const Spacer(),
                           ] else
                             ListView.builder(
                               shrinkWrap: true,

@@ -7,10 +7,10 @@ import 'package:montra_clone/app/image_paths.dart';
 import 'package:montra_clone/app/routes/router/router.gr.dart';
 import 'package:montra_clone/modules/bottom_navigation_bar/cubit/configuration_cubit.dart';
 import 'package:montra_clone/modules/bottom_navigation_bar/widgets/add_transaction_buttton.dart';
+import 'package:montra_clone/modules/categories/bloc/categories_bloc.dart';
 
 @RoutePage()
-class BottomNavigationBarScreen extends StatelessWidget
-    implements AutoRouteWrapper {
+class BottomNavigationBarScreen extends StatefulWidget implements AutoRouteWrapper {
   const BottomNavigationBarScreen({super.key});
 
   @override
@@ -19,6 +19,17 @@ class BottomNavigationBarScreen extends StatelessWidget
       create: (context) => ConfigurationCubit(),
       child: this,
     );
+  }
+
+  @override
+  State<BottomNavigationBarScreen> createState() => _BottomNavigationBarScreenState();
+}
+
+class _BottomNavigationBarScreenState extends State<BottomNavigationBarScreen> {
+  @override
+  void initState() {
+    super.initState();
+    context.read<CategoriesBloc>().add(LoadCategoriesEvent());
   }
 
   @override
@@ -44,18 +55,14 @@ class BottomNavigationBarScreen extends StatelessWidget
               mainAxisAlignment: MainAxisAlignment.spaceBetween,
               children: [
                 BottomAppBarItem(
-                  imagePath: tabsRouter.activeIndex == 0
-                      ? homeActiveIconPath
-                      : homeInactiveIconPath,
+                  imagePath: tabsRouter.activeIndex == 0 ? homeActiveIconPath : homeInactiveIconPath,
                   label: 'Home',
                   onTap: () {
                     tabsRouter.setActiveIndex(0);
                   },
                 ),
                 BottomAppBarItem(
-                  imagePath: tabsRouter.activeIndex == 1
-                      ? transactionActiveIconPath
-                      : transactionInactiveIconPath,
+                  imagePath: tabsRouter.activeIndex == 1 ? transactionActiveIconPath : transactionInactiveIconPath,
                   label: 'Transaction',
                   onTap: () {
                     tabsRouter.setActiveIndex(1);
@@ -63,18 +70,14 @@ class BottomNavigationBarScreen extends StatelessWidget
                 ),
                 const SizedBox(width: 20),
                 BottomAppBarItem(
-                  imagePath: tabsRouter.activeIndex == 3
-                      ? pieChartActiveIconPath
-                      : pieChartInactiveIconPath,
+                  imagePath: tabsRouter.activeIndex == 3 ? pieChartActiveIconPath : pieChartInactiveIconPath,
                   label: 'Budget',
                   onTap: () {
                     tabsRouter.setActiveIndex(3);
                   },
                 ),
                 BottomAppBarItem(
-                  imagePath: tabsRouter.activeIndex == 4
-                      ? userActiveIconPath
-                      : userInactiveIconPath,
+                  imagePath: tabsRouter.activeIndex == 4 ? userActiveIconPath : userInactiveIconPath,
                   label: 'Profile',
                   onTap: () {
                     tabsRouter.setActiveIndex(4);
@@ -83,8 +86,7 @@ class BottomNavigationBarScreen extends StatelessWidget
               ],
             ),
           ),
-          floatingActionButtonLocation:
-              FloatingActionButtonLocation.miniCenterDocked,
+          floatingActionButtonLocation: FloatingActionButtonLocation.miniCenterDocked,
           floatingActionButton: const AddTransactionButton(),
         );
       },
