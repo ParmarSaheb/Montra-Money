@@ -6,6 +6,7 @@ import 'package:flutter_bloc/flutter_bloc.dart';
 import 'package:formz/formz.dart';
 import 'package:montra_clone/core/repository/authentication_repository.dart';
 import 'package:montra_clone/core/validators/empty_field_validator.dart';
+import 'package:montra_clone/modules/categories/models/category_model.dart';
 import 'package:montra_clone/modules/expense_tracking/models/transaction_model.dart';
 import 'package:uuid/uuid.dart';
 
@@ -55,16 +56,16 @@ class ExpenseTrackerBloc
         await transactionDocRef.add(
           TransactionModel.toFireStore(
             TransactionModel(
-              transactionId: uuid.v4(),
-              transactionAmount: state.transactionAmount.value,
-              description: state.description.value,
-              createdAt: DateTime.now().millisecondsSinceEpoch,
+                transactionId: uuid.v4(),
+                transactionAmount: state.transactionAmount.value,
+                description: state.description.value.trim() == "" ? "-" : state.description.value.trim(),
+                createdAt: DateTime.now().millisecondsSinceEpoch,
               category: state.category!,
               isExpense: event.isExpense,
             ),
           ),
         );
-        emit(state.copyWith(status: ExpenseTrackerStateStatus.success));
+        emit(state.copyWith(status: ExpenseTrackerStateStatus.added));
       }
     } else {
       emit(
@@ -101,7 +102,7 @@ class ExpenseTrackerBloc
   }
 
   void _setCategory(SetCategoryEvent event, Emitter<ExpenseTrackerState> emit) {
-    emit(state.copyWith(category: event.category));
+    emit(state.copyWith(category: event.category, status: ExpenseTrackerStateStatus.success));
   }
 
   Future<void> _updateTransactionData(
@@ -116,7 +117,7 @@ class ExpenseTrackerBloc
           description: description,
           transactionAmount: amount,
           isValid: Formz.validate(
-            [description, amount],
+            [amount],
           ),
         ),
       );
@@ -136,8 +137,9 @@ class ExpenseTrackerBloc
               .collection('transaction')
               .doc(docId)
               .update({
-            'category': state.category,
-            'description': state.description.value,
+            if(state.category != null)
+              'category': state.category?.toJson(),
+            'description': state.description.value.trim() == "" ? "-" : state.description.value.trim(),
             'transactionAmount': state.transactionAmount.value,
           });
           emit(state.copyWith(status: ExpenseTrackerStateStatus.updated));
@@ -195,10 +197,10 @@ class ExpenseTrackerBloc
     emit(
       state.copyWith(
         transactionAmount:
-            EmptyFieldValidator.dirty(event.transactionModel.transactionAmount),
+            EmptyFieldValidator.dirty(event.transactionModel!.transactionAmount),
         description:
-            EmptyFieldValidator.dirty(event.transactionModel.description),
-        category: event.transactionModel.category,
+            EmptyFieldValidator.dirty(event.transactionModel!.description),
+        category: event.transactionModel!.category,
       ),
     );
   }

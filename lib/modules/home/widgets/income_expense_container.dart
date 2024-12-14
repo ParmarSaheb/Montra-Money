@@ -1,6 +1,8 @@
 import 'package:flutter/material.dart';
 import 'package:montra_clone/app/app_colors.dart';
 import 'package:montra_clone/app/image_paths.dart';
+import 'package:montra_clone/app_ui/theme/theme.dart';
+import 'package:montra_clone/core/extensions/to_indian_rupee_extension.dart';
 import 'package:montra_clone/modules/home/widgets/price_card.dart';
 
 class IncomeExpenseContainer extends StatelessWidget {
@@ -47,12 +49,9 @@ class IncomeExpenseContainer extends StatelessWidget {
               ),
             ),
             Text(
-              totalBudget >= 0 ? '\u{20B9}${totalBudget.toStringAsFixed(2)}'
-                  : '- \u{20B9}${totalBudget.abs().toStringAsFixed(2)}',
-              style: const TextStyle(
-                fontSize: 30,
-                fontWeight: FontWeight.bold,
-              ),
+              totalBudget >= 0 ? '${totalBudget.toIndianRupee}'
+                  : '-${totalBudget.abs().toIndianRupee}',
+              style: AppTheme.maybeOf(context)?.typography.title32,
             ),
             Row(
               mainAxisAlignment: MainAxisAlignment.spaceEvenly,
@@ -61,13 +60,13 @@ class IncomeExpenseContainer extends StatelessWidget {
                   iconPath: incomeIcon,
                   color: AppColors.instance.green100,
                   label: 'Income',
-                  price: '\u{20B9}${income.toStringAsFixed(1)}',
+                  price: '${income.toIndianRupeeWith(decimalPoint: 1)}',
                 ),
                 PriceCard(
                   iconPath: expenseIcon,
                   color: AppColors.instance.red100,
                   label: 'Expenses',
-                  price: '\u{20B9}${expense.toStringAsFixed(1)}',
+                  price: '${expense.toIndianRupeeWith(decimalPoint: 1)}',
                 ),
               ],
             ),

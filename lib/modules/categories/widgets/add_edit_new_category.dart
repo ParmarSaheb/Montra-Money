@@ -13,10 +13,11 @@ import 'package:montra_clone/modules/categories/models/category_model.dart';
 import '../bloc/categories_bloc.dart';
 
 class AddEditNewCategory extends StatefulWidget {
+  final bool isIncome;
   final CategoryPngIcons? selectedIcon;
   final CategoryModel? category;
 
-  const AddEditNewCategory({super.key, this.category, this.selectedIcon});
+  const AddEditNewCategory({super.key, this.category, this.selectedIcon, this.isIncome = true});
 
   @override
   State<AddEditNewCategory> createState() => _AddEditNewCategoryState();
@@ -47,6 +48,7 @@ class _AddEditNewCategoryState extends State<AddEditNewCategory> {
   void initState() {
     super.initState();
     selectedIcon = widget.selectedIcon ?? CategoryPngIcons.values.first;
+    isIncome = widget.isIncome;
     if (widget.category != null) {
       categoryName = widget.category!.name;
       selectedIcon = widget.category!.imagePath.getIcon;

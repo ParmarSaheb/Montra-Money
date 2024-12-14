@@ -33,7 +33,7 @@ class DescriptionFieldChangeEvent extends ExpenseTrackerEvent {
 
 class SetCategoryEvent extends ExpenseTrackerEvent {
   const SetCategoryEvent({required this.category});
-  final String? category;
+  final CategoryModel? category;
 
   @override
   List<Object?> get props => [];
@@ -58,7 +58,7 @@ class DeleteTransactionDataEvent extends ExpenseTrackerEvent {
 class EmitSelectedTransactionDetailsEvent extends ExpenseTrackerEvent {
   const EmitSelectedTransactionDetailsEvent({required this.transactionModel});
 
-  final TransactionModel transactionModel;
+  final TransactionModel? transactionModel;
 
   @override
   List<Object?> get props => [transactionModel];

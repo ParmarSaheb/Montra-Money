@@ -9,9 +9,11 @@ import 'package:montra_clone/app_ui/theme/theme_bloc.dart';
 import 'package:montra_clone/core/repository/authentication_repository.dart';
 import 'package:montra_clone/firebase_options.dart';
 import 'package:montra_clone/modules/categories/bloc/categories_bloc.dart';
+import 'package:montra_clone/modules/home/bloc/home_bloc.dart';
 
 import 'core/utils/logging_bloc_observer.dart';
 import 'core/utils/size_config.dart';
+import 'modules/expense_tracking/bloc/expense_tracker_bloc.dart';
 
 Future<void> main() async {
   WidgetsFlutterBinding.ensureInitialized();

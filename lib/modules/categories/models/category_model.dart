@@ -2,7 +2,7 @@ import 'package:equatable/equatable.dart';
 import 'package:montra_clone/app/category_png_icons.dart';
 
 class CategoryModel extends Equatable {
-  final id;
+  final String id;
   final String userId;
   final String name;
   final String imagePath;
@@ -17,6 +17,8 @@ class CategoryModel extends Equatable {
     required this.isIncome,
     this.isDeleted = false,
   });
+
+  factory CategoryModel.empty() => CategoryModel(id: "", userId: "", name: "", imagePath: "", isIncome: false);
 
   @override
   List<Object> get props => [id, userId, name, imagePath, isIncome];

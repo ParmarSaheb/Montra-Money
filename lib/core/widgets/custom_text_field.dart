@@ -10,6 +10,7 @@ class CustomTextField extends StatelessWidget {
     required this.initialValue,
     this.autoFocus = false,
     this.isDesc = false,
+    this.capitalization = TextCapitalization.none,
   });
 
   final String hintText;
@@ -18,6 +19,7 @@ class CustomTextField extends StatelessWidget {
   final String? initialValue;
   final bool autoFocus;
   final bool isDesc;
+  final TextCapitalization capitalization;
 
   @override
   Widget build(BuildContext context) {
@@ -26,6 +28,7 @@ class CustomTextField extends StatelessWidget {
       onChanged: (value) => onChanged(value),
       autofocus: autoFocus,
       maxLines: isDesc ? 4 : null,
+      textCapitalization: TextCapitalization.words,
       keyboardType: isDesc ? TextInputType.multiline : null,
       decoration: InputDecoration(
         border: OutlineInputBorder(borderRadius: BorderRadius.circular(16)),

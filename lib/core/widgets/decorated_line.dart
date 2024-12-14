@@ -14,7 +14,11 @@ class DecoratedLine extends StatelessWidget {
         margin: const EdgeInsets.only(top: 10),
         height: 8,
         width: 60,
+        decoration: BoxDecoration(
+          
         color: AppColors.instance.violet40,
+          borderRadius: BorderRadius.circular(20)
+        ),
       ),
     );
   }

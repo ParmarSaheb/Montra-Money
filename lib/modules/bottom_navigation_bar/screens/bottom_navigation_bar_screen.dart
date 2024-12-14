@@ -5,9 +5,12 @@ import 'package:flutter_svg/flutter_svg.dart';
 import 'package:montra_clone/app/app_colors.dart';
 import 'package:montra_clone/app/image_paths.dart';
 import 'package:montra_clone/app/routes/router/router.gr.dart';
+import 'package:montra_clone/core/utils/gap.dart';
+import 'package:montra_clone/core/utils/size_config.dart';
 import 'package:montra_clone/modules/bottom_navigation_bar/cubit/configuration_cubit.dart';
 import 'package:montra_clone/modules/bottom_navigation_bar/widgets/add_transaction_buttton.dart';
 import 'package:montra_clone/modules/categories/bloc/categories_bloc.dart';
+import 'package:montra_clone/modules/transaction/bloc/transaction_bloc.dart';
 
 @RoutePage()
 class BottomNavigationBarScreen extends StatefulWidget implements AutoRouteWrapper {
@@ -49,39 +52,52 @@ class _BottomNavigationBarScreenState extends State<BottomNavigationBarScreen> {
           extendBody: true,
           body: child,
           bottomNavigationBar: BottomAppBar(
+            notchMargin: 0,
+            padding: EdgeInsets.zero,
             color: AppColors.instance.light100,
             shape: const CircularNotchedRectangle(),
             child: Row(
-              mainAxisAlignment: MainAxisAlignment.spaceBetween,
               children: [
-                BottomAppBarItem(
-                  imagePath: tabsRouter.activeIndex == 0 ? homeActiveIconPath : homeInactiveIconPath,
-                  label: 'Home',
-                  onTap: () {
-                    tabsRouter.setActiveIndex(0);
-                  },
+                Expanded(
+                  child: Row(
+                    children: [
+                      BottomAppBarItem(
+                        imagePath: tabsRouter.activeIndex == 0 ? homeActiveIconPath : homeInactiveIconPath,
+                        label: 'Home',
+                        onTap: () {
+                          tabsRouter.setActiveIndex(0);
+                        },
+                      ),
+                      BottomAppBarItem(
+                        imagePath: tabsRouter.activeIndex == 1 ? transactionActiveIconPath : transactionInactiveIconPath,
+                        label: 'Transaction',
+                        onTap: () {
+                          tabsRouter.setActiveIndex(1);
+                        },
+                      ),
+                    ],
+                  ),
                 ),
-                BottomAppBarItem(
-                  imagePath: tabsRouter.activeIndex == 1 ? transactionActiveIconPath : transactionInactiveIconPath,
-                  label: 'Transaction',
-                  onTap: () {
-                    tabsRouter.setActiveIndex(1);
-                  },
-                ),
-                const SizedBox(width: 20),
-                BottomAppBarItem(
-                  imagePath: tabsRouter.activeIndex == 3 ? pieChartActiveIconPath : pieChartInactiveIconPath,
-                  label: 'Budget',
-                  onTap: () {
-                    tabsRouter.setActiveIndex(3);
-                  },
-                ),
-                BottomAppBarItem(
-                  imagePath: tabsRouter.activeIndex == 4 ? userActiveIconPath : userInactiveIconPath,
-                  label: 'Profile',
-                  onTap: () {
-                    tabsRouter.setActiveIndex(4);
-                  },
+                SizedBox(width: 10.w),
+                Expanded(
+                  child: Row(
+                    children: [
+                      BottomAppBarItem(
+                        imagePath: tabsRouter.activeIndex == 3 ? pieChartActiveIconPath : pieChartInactiveIconPath,
+                        label: 'Budget',
+                        onTap: () {
+                          tabsRouter.setActiveIndex(3);
+                        },
+                      ),
+                      BottomAppBarItem(
+                        imagePath: tabsRouter.activeIndex == 4 ? userActiveIconPath : userInactiveIconPath,
+                        label: 'Profile',
+                        onTap: () {
+                          tabsRouter.setActiveIndex(4);
+                        },
+                      ),
+                    ],
+                  ),
                 ),
               ],
             ),
@@ -108,18 +124,23 @@ class BottomAppBarItem extends StatelessWidget {
 
   @override
   Widget build(BuildContext context) {
-    return GestureDetector(
-      onTap: onTap,
-      child: Column(
-        mainAxisSize: MainAxisSize.min,
-        mainAxisAlignment: MainAxisAlignment.center,
-        children: [
-          SvgPicture.asset(
-            imagePath,
-          ),
-          const SizedBox(height: 5),
-          Text(label),
-        ],
+    return Expanded(
+      child: InkWell(
+        overlayColor: WidgetStatePropertyAll(Colors.transparent),
+        onTap: onTap,
+        child: Column(
+          mainAxisSize: MainAxisSize.min,
+          mainAxisAlignment: MainAxisAlignment.center,
+          children: [
+            VGap(1.h),
+            Expanded(
+              child: SvgPicture.asset(
+                imagePath,
+              ),
+            ),
+            Padding(padding: EdgeInsets.symmetric(vertical: 1.h), child: Text(label)),
+          ],
+        ),
       ),
     );
   }

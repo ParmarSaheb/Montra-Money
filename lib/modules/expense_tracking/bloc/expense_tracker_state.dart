@@ -9,6 +9,7 @@ enum ExpenseTrackerStateStatus {
   success,
   deleted,
   updated,
+  added,
 }
 
 class ExpenseTrackerState extends Equatable {
@@ -24,7 +25,7 @@ class ExpenseTrackerState extends Equatable {
   final ExpenseTrackerStateStatus status;
   final EmptyFieldValidator transactionAmount;
   final EmptyFieldValidator description;
-  final String? category;
+  final CategoryModel? category;
   final bool isValid;
   final String? errorMessage;
 
@@ -42,7 +43,7 @@ class ExpenseTrackerState extends Equatable {
     ExpenseTrackerStateStatus? status,
     EmptyFieldValidator? transactionAmount,
     EmptyFieldValidator? description,
-    String? category,
+    CategoryModel? category,
     bool? isValid,
     String? errorMessage,
   }) {
@@ -50,7 +51,7 @@ class ExpenseTrackerState extends Equatable {
       status: status ?? this.status,
       transactionAmount: transactionAmount ?? this.transactionAmount,
       description: description ?? this.description,
-      category: category ?? this.category,
+      category: category?.id == "" ? null : (category ?? this.category),
       isValid: isValid ?? this.isValid,
       errorMessage: errorMessage ?? this.errorMessage,
     );

@@ -1,4 +1,5 @@
 import 'package:equatable/equatable.dart';
+import 'package:montra_clone/modules/categories/models/category_model.dart';
 
 class TransactionModel extends Equatable {
   const TransactionModel({
@@ -14,7 +15,7 @@ class TransactionModel extends Equatable {
   final String transactionAmount;
   final String description;
   final int createdAt;
-  final String category;
+  final CategoryModel? category;
   final bool isExpense;
 
   static Map<String, dynamic> toFireStore(TransactionModel transactionModel) {
@@ -23,7 +24,7 @@ class TransactionModel extends Equatable {
       'transactionAmount': transactionModel.transactionAmount,
       'description': transactionModel.description,
       'createdAt': transactionModel.createdAt,
-      'category': transactionModel.category,
+      'category': transactionModel.category?.toJson(),
       'isExpense': transactionModel.isExpense
     };
   }
@@ -34,7 +35,7 @@ class TransactionModel extends Equatable {
       transactionAmount: data['transactionAmount'],
       description: data['description'],
       createdAt: data['createdAt'],
-      category: data['category'],
+      category: data['category'] == null ? null : CategoryModel.fromJson(data['category']),
       isExpense: data['isExpense'],
     );
   }

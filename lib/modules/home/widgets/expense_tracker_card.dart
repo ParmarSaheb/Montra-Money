@@ -1,7 +1,11 @@
 import 'package:flutter/material.dart';
-import 'package:flutter_svg/flutter_svg.dart';
 import 'package:montra_clone/app/app_colors.dart';
-import 'package:montra_clone/app/image_paths.dart';
+import 'package:montra_clone/app_ui/theme/theme.dart';
+import 'package:montra_clone/core/extensions/to_indian_rupee_extension.dart';
+import 'package:montra_clone/core/utils/gap.dart';
+import 'package:montra_clone/core/utils/size_config.dart';
+
+import '../../categories/models/category_model.dart';
 
 class ExpenseTrackerCard extends StatelessWidget {
   const ExpenseTrackerCard({
@@ -14,7 +18,7 @@ class ExpenseTrackerCard extends StatelessWidget {
     required this.onCardTap,
   });
 
-  final String category;
+  final CategoryModel? category;
   final bool isExpense;
   final String amount;
   final String description;
@@ -26,72 +30,45 @@ class ExpenseTrackerCard extends StatelessWidget {
     return GestureDetector(
       onTap: onCardTap,
       child: Container(
-        padding: const EdgeInsets.all(15),
-        margin: const EdgeInsets.all(8),
+        padding: EdgeInsets.all(7),
+        margin: EdgeInsets.all(2.w),
         width: double.infinity,
-        height: 100,
         decoration: BoxDecoration(
-          color: AppColors.instance.light40,
-          borderRadius: const BorderRadius.all(
-            Radius.circular(24),
-          ),
+          color: AppColors.instance.yellow20.withOpacity(0.2),
+          borderRadius: BorderRadius.circular(17),
         ),
         child: Row(
           children: <Widget>[
             Container(
-              height: 70,
-              width: 70,
-              padding: const EdgeInsets.all(18),
+              padding: const EdgeInsets.all(2),
               decoration: BoxDecoration(
-                color: !isExpense
-                    ? AppColors.instance.green20
-                    : category == 'Food'
-                        ? AppColors.instance.red20
-                        : category == 'Shopping'
-                            ? AppColors.instance.yellow20
-                            : category == 'Transportation'
-                                ? AppColors.instance.blue20
-                                : AppColors.instance.violet20,
-                borderRadius: const BorderRadius.all(
-                  Radius.circular(20),
-                ),
+                // color: !isExpense ? AppColors.instance.green20 : AppColors.instance.red20,
+                borderRadius: BorderRadius.circular(14.5),
               ),
-              child: SvgPicture.asset(
-                !isExpense
-                    ? salaryIconPath
-                    : category == 'Food'
-                        ? foodIconPath
-                        : category == 'Shopping'
-                            ? shoppingIconPath
-                            : category == 'Transportation'
-                                ? carIconPath
-                                : subscriptionIconPath,
-                height: 50,
-                width: 50,
+              child: Image.asset(
+                category?.imagePath ?? "",
+                height: 10.w,
+                width: 10.w,
+                fit: BoxFit.fill,
               ),
             ),
-            const SizedBox(width: 10),
+            HGap(3.w),
             Expanded(
               child: Column(
                 mainAxisAlignment: MainAxisAlignment.spaceEvenly,
                 crossAxisAlignment: CrossAxisAlignment.start,
                 children: [
                   Text(
-                    category,
+                    category?.name ?? "--",
                     overflow: TextOverflow.ellipsis,
                     maxLines: 1,
-                    style: const TextStyle(
-                      fontWeight: FontWeight.bold,
-                      fontSize: 15,
-                    ),
+                    style: AppTheme.maybeOf(context)?.typography.regular16,
                   ),
                   Text(
                     description,
                     overflow: TextOverflow.ellipsis,
                     maxLines: 1,
-                    style: const TextStyle(
-                      fontSize: 15,
-                    ),
+                    style: AppTheme.maybeOf(context)?.typography.regular14.copyWith(fontWeight: FontWeight.w400),
                   )
                 ],
               ),
@@ -103,11 +80,9 @@ class ExpenseTrackerCard extends StatelessWidget {
                 crossAxisAlignment: CrossAxisAlignment.end,
                 children: [
                   Text(
-                    isExpense ? '-\u{20B9}$amount' : '+\u{20B9}$amount',
+                    "${isExpense ? '-' : '+'}${amount.toIndianRupee}",
                     style: TextStyle(
-                      color: isExpense
-                          ? AppColors.instance.red100
-                          : AppColors.instance.green100,
+                      color: isExpense ? AppColors.instance.red100 : AppColors.instance.green100,
                       fontSize: 16,
                       fontWeight: FontWeight.bold,
                     ),

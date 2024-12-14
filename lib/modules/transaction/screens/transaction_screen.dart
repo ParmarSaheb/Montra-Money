@@ -3,6 +3,7 @@ import 'package:flutter/material.dart';
 import 'package:flutter_bloc/flutter_bloc.dart';
 import 'package:montra_clone/app/app_colors.dart';
 import 'package:montra_clone/app/routes/router/router.gr.dart';
+import 'package:montra_clone/core/utils/devlog.dart';
 import 'package:montra_clone/core/utils/fire_store_queries.dart';
 import 'package:montra_clone/modules/home/widgets/expense_tracker_card.dart';
 import 'package:montra_clone/modules/transaction/bloc/transaction_bloc.dart';
@@ -16,8 +17,11 @@ class TransactionScreen extends StatefulWidget implements AutoRouteWrapper {
 
   @override
   Widget wrappedRoute(BuildContext context) {
-    return BlocProvider(
-      create: (context) => TransactionBloc()..add(const FetchDataByDayEvent()),
+    return MultiBlocProvider(
+      providers: [
+        BlocProvider(create: (context) => TransactionBloc()..add(const FetchDataByDayEvent())),
+        // BlocProvider(create: (context) => HomeBloc()),
+      ],
       child: this,
     );
   }
@@ -28,8 +32,22 @@ class TransactionScreen extends StatefulWidget implements AutoRouteWrapper {
 
 class _TransactionScreenState extends State<TransactionScreen> {
   @override
+  void initState() {
+    super.initState();
+    devlog("called");
+    context.read<TransactionBloc>().add(const FetchDataByDayEvent());
+  }
+
+  @override
+  void didUpdateWidget(covariant TransactionScreen oldWidget) {
+    super.didUpdateWidget(oldWidget);
+    devlog("called");
+  }
+
+  @override
   void didChangeDependencies() {
     super.didChangeDependencies();
+    devlog("called");
     context.read<TransactionBloc>().add(const FetchDataByDayEvent());
   }
 
@@ -108,72 +126,70 @@ class _TransactionScreenState extends State<TransactionScreen> {
                                     ),
                                   )
                                 : Expanded(
-                                    child: ListView.builder(
-                                      shrinkWrap: true,
-                                      itemCount: state.transactionList.length,
-                                      itemBuilder: (context, index) =>
-                                          ExpenseTrackerCard(
-                                        category: state
-                                            .transactionList[index].category,
-                                        isExpense: state
-                                            .transactionList[index].isExpense,
-                                        amount: state.transactionList[index]
-                                            .transactionAmount,
-                                        description: state
-                                            .transactionList[index].description,
-                                        createdAt: FireStoreQueries.instance
-                                            .getFormattedTime(state
-                                                .transactionList[index]
-                                                .createdAt),
-                                        onCardTap: () {},
+                                    child: RefreshIndicator(
+                                      onRefresh: () async {
+                                        context.read<TransactionBloc>().add(FetchDataByDayEvent());
+                                      },
+                                      child: ListView.builder(
+                                        shrinkWrap: true,
+                                        itemCount: state.transactionList.length,
+                                        itemBuilder: (context, index) => ExpenseTrackerCard(
+                                          category: state.transactionList[index].category,
+                                          isExpense: state.transactionList[index].isExpense,
+                                          amount: state.transactionList[index].transactionAmount,
+                                          description: state.transactionList[index].description,
+                                          createdAt: FireStoreQueries.instance.getFormattedTime(state.transactionList[index].createdAt),
+                                          onCardTap: () {},
+                                        ),
                                       ),
                                     ),
                                   )
                             : state.transactionMap.isEmpty
                                 ? Center(
-                                    child: Text(
-                                      'There is no transactions to show for this filter',
-                                      style: textStyle,
-                                    ),
+                  child: Text('There is no transactions to show for this filter', style: textStyle),
                                   )
                                 : Expanded(
-                                    child: ListView.builder(
-                                      shrinkWrap: true,
-                                      itemCount: state.transactionMap.length,
-                                      itemBuilder: (context, index) {
-                                        final key = state.transactionMap.keys
-                                            .elementAt(index);
-                                        final list =
-                                            state.transactionMap[key] ?? [];
-                                        return Column(
-                                          mainAxisSize: MainAxisSize.min,
-                                          mainAxisAlignment:
-                                              MainAxisAlignment.start,
-                                          children: [
-                                            Row(
-                                              children: [
-                                                DateTitle(date: key),
-                                              ],
-                                            ),
-                                            const SizedBox(
-                                              height: 10,
-                                            ),
-                                            ...list.map(
-                                              (e) => ExpenseTrackerCard(
-                                                category: e.category,
-                                                isExpense: e.isExpense,
-                                                amount: e.transactionAmount,
-                                                description: e.description,
-                                                createdAt: FireStoreQueries
-                                                    .instance
-                                                    .getFormattedTime(
-                                                        e.createdAt),
-                                                onCardTap: () {},
-                                              ),
-                                            ),
-                                          ],
-                                        );
+                                    child: RefreshIndicator(
+                                      onRefresh: () async {
+                                        context.read<TransactionBloc>().add(FetchDataByDayEvent());
                                       },
+                                      child: ListView.builder(
+                                        shrinkWrap: true,
+                                        itemCount: state.transactionMap.length,
+                                        itemBuilder: (context, index) {
+                                          final key = state.transactionMap.keys.elementAt(index);
+                                          final list = state.transactionMap[key] ?? [];
+                                          return Column(
+                                            mainAxisSize: MainAxisSize.min,
+                                            mainAxisAlignment: MainAxisAlignment.start,
+                                            children: [
+                                              Row(
+                                                children: [
+                                                  DateTitle(date: key),
+                                                ],
+                                              ),
+                                              const SizedBox(height: 10),
+                                              ...list.map(
+                                                (e) => ExpenseTrackerCard(
+                                                  category: e.category,
+                                                  isExpense: e.isExpense,
+                                                  amount: e.transactionAmount,
+                                                  description: e.description,
+                                                  createdAt: FireStoreQueries.instance.getFormattedTime(e.createdAt),
+                                                  onCardTap: () async {
+                                                    await context.router.push(
+                                                      ExpenseTrackerRoute(
+                                                        isExpense: e.isExpense,
+                                                        transactionModel: e,
+                                                      ),
+                                                    );
+                                                  },
+                                                ),
+                                              ),
+                                            ],
+                                          );
+                                        },
+                                      ),
                                     ),
                                   )
                         : const SizedBox();

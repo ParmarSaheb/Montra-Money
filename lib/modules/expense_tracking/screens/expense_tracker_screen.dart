@@ -2,7 +2,6 @@ import 'package:auto_route/auto_route.dart';
 import 'package:flutter/material.dart';
 import 'package:flutter_bloc/flutter_bloc.dart';
 import 'package:montra_clone/app/app_colors.dart';
-import 'package:montra_clone/app/routes/router/router.gr.dart';
 import 'package:montra_clone/app_ui/theme/theme.dart';
 import 'package:montra_clone/core/utils/custom_snackbar.dart';
 import 'package:montra_clone/core/utils/gap.dart';
@@ -11,14 +10,16 @@ import 'package:montra_clone/core/widgets/amount_text_field.dart';
 import 'package:montra_clone/core/widgets/button_title.dart';
 import 'package:montra_clone/core/widgets/custom_elevated_button.dart';
 import 'package:montra_clone/core/widgets/custom_text_field.dart';
-import 'package:montra_clone/core/widgets/error_text.dart';
 import 'package:montra_clone/modules/categories/bloc/categories_bloc.dart';
+import 'package:montra_clone/modules/categories/widgets/add_edit_new_category.dart';
 import 'package:montra_clone/modules/expense_tracking/bloc/expense_tracker_bloc.dart';
 import 'package:montra_clone/modules/expense_tracking/models/transaction_model.dart';
-import 'package:montra_clone/modules/expense_tracking/widgets/custom_drop_down_field.dart';
 import 'package:montra_clone/modules/expense_tracking/widgets/delete_alert_dialogue.dart';
 import 'package:montra_clone/modules/expense_tracking/widgets/delete_button.dart';
-import 'package:montra_clone/modules/expense_tracking/widgets/success_dialogue.dart';
+
+import '../../../app/routes/router/router.gr.dart';
+import '../../categories/models/category_model.dart';
+import '../../home/bloc/home_bloc.dart';
 
 @RoutePage()
 class ExpenseTrackerScreen extends StatefulWidget implements AutoRouteWrapper {
@@ -32,12 +33,15 @@ class ExpenseTrackerScreen extends StatefulWidget implements AutoRouteWrapper {
   State<ExpenseTrackerScreen> createState() => _ExpenseTrackerScreenState();
 
   final bool isExpense;
-  final dynamic transactionModel;
+  final TransactionModel? transactionModel;
 
   @override
   Widget wrappedRoute(BuildContext context) {
-    return BlocProvider(
-      create: (context) => ExpenseTrackerBloc(),
+    return MultiBlocProvider(
+      providers: [
+        BlocProvider(create: (context) => ExpenseTrackerBloc()),
+        BlocProvider(create: (context) => HomeBloc()),
+      ],
       child: this,
     );
   }
@@ -50,6 +54,7 @@ class _ExpenseTrackerScreenState extends State<ExpenseTrackerScreen> {
   void initState() {
     super.initState();
     isExpense = widget.isExpense;
+    context.read<ExpenseTrackerBloc>().add(SetCategoryEvent(category: CategoryModel.empty()));
     if (widget.transactionModel != null) {
       context.read<ExpenseTrackerBloc>().add(
             EmitSelectedTransactionDetailsEvent(transactionModel: widget.transactionModel),
@@ -81,33 +86,20 @@ class _ExpenseTrackerScreenState extends State<ExpenseTrackerScreen> {
             isBehaviourFloating: false,
           );
         } else if (state.status == ExpenseTrackerStateStatus.deleted) {
-          await showDialog(
-            context: context,
-            builder: (context) => SuccessDialogue(
-              successMessage: 'Transaction deleted successfully',
-              onOkTap: () => context.router
-                  .replaceAll([const HomeRoute()], updateExistingRoutes: false),
-            ),
-          );
-        } else if (state.status == ExpenseTrackerStateStatus.success) {
-          await showDialog(
-            context: context,
-            builder: (context) => SuccessDialogue(
-              successMessage: 'Data added successfully',
-              onOkTap: () => context.router
-                  .replaceAll([const HomeRoute()], updateExistingRoutes: false),
-            ),
-          );
+          await showToast(message: "Transaction Deleted Successfully.!");
+          context.router.replaceAll([const HomeRoute()], updateExistingRoutes: false);
+          // context.maybePop();
+        } else if (state.status == ExpenseTrackerStateStatus.added) {
+          await showToast(message: "Transaction Added Successfully.!");
+          context.router.replaceAll([const HomeRoute()], updateExistingRoutes: false);
+          // context.maybePop();
         } else if (state.status == ExpenseTrackerStateStatus.updated) {
-          await showDialog(
-            context: context,
-            builder: (context) => SuccessDialogue(
-              successMessage: 'Data updated successfully',
-              onOkTap: () => context.router
-                  .replaceAll([const HomeRoute()], updateExistingRoutes: false),
-            ),
-          );
+          await showToast(message: "Transaction Updated Successfully.!");
+          context.router.replaceAll([const HomeRoute()], updateExistingRoutes: false);
+          // context.maybePop();
         }
+        context.read<HomeBloc>().add(const FetchAmountDetails());
+        context.read<HomeBloc>().add(const FetchDataOfCurrentDay());
       },
       child: AnimatedContainer(
         duration: Duration(milliseconds: 300),
@@ -123,7 +115,10 @@ class _ExpenseTrackerScreenState extends State<ExpenseTrackerScreen> {
               children: [
                 Expanded(
                   child: InkWell(
-                    onTap: () => setState(() => isExpense = false),
+                    onTap: () => setState(() {
+                      isExpense = false;
+                      context.read<ExpenseTrackerBloc>().add(SetCategoryEvent(category: CategoryModel.empty()));
+                    }),
                     child: AnimatedOpacity(
                       duration: Duration(milliseconds: 100),
                       opacity: !isExpense ? 1 : 0.7,
@@ -143,14 +138,17 @@ class _ExpenseTrackerScreenState extends State<ExpenseTrackerScreen> {
                 ),
                 Expanded(
                   child: InkWell(
-                    onTap: () => setState(() => isExpense = true),
+                    onTap: () => setState(() {
+                      isExpense = true;
+                      context.read<ExpenseTrackerBloc>().add(SetCategoryEvent(category: CategoryModel.empty()));
+                    }),
                     child: AnimatedOpacity(
                       duration: Duration(milliseconds: 100),
                       opacity: isExpense ? 1 : 0.7,
                       child: Padding(
                         padding: const EdgeInsets.all(8.0),
-                        child: Row(mainAxisAlignment: MainAxisAlignment.center,
-
+                        child: Row(
+                          mainAxisAlignment: MainAxisAlignment.center,
                           children: [
                             if (isExpense) Icon(Icons.check_circle),
                             HGap(1.w),
@@ -218,7 +216,7 @@ class _ExpenseTrackerScreenState extends State<ExpenseTrackerScreen> {
                       ),
                       if (widget.transactionModel != null)
                         _DeleteButton(
-                          transactionModel: widget.transactionModel,
+                          transactionModel: widget.transactionModel!,
                           showDeleteAlertDialogue: _showDeleteAlertDialogue,
                         ),
                       VGap(1.h),
@@ -280,13 +278,131 @@ class _CategoryFieldState extends State<_CategoryField> {
   Widget build(BuildContext context) {
     return BlocBuilder<ExpenseTrackerBloc, ExpenseTrackerState>(
       builder: (context, state) {
-        return CustomDropDownField(
-          labelText: 'Category',
-          options: context.read<CategoriesBloc>().state.categories.where((e) => e.isIncome == widget.isExpense).toList().map((e) => e.name).toList(),
-          selectedValue: widget.transactionModel == null ? state.category : widget.transactionModel!.category,
-          onChanged: (value) {
-            context.read<ExpenseTrackerBloc>().add(SetCategoryEvent(category: value));
-          },
+        final cates = context.read<CategoriesBloc>().state.categories.where((e) => !e.isIncome == widget.isExpense).toList();
+        return Column(
+          mainAxisSize: MainAxisSize.min,
+          crossAxisAlignment: CrossAxisAlignment.start,
+          children: [
+            Padding(
+              padding: EdgeInsets.symmetric(horizontal: 0.5.w),
+              child: Text("Category"),
+            ),
+            VGap(0.3.h),
+            InkWell(
+              onTap: () {
+                FocusManager.instance.primaryFocus?.unfocus();
+                showModalBottomSheet(
+                  context: context,
+                  isScrollControlled: true,
+                  builder: (ctx) {
+                    return Container(
+                      constraints: BoxConstraints(maxHeight: 70.h),
+                      padding: EdgeInsets.symmetric(horizontal: 3.w),
+                      child: BlocBuilder<CategoriesBloc, CategoriesState>(
+                        builder: (ctx, cateState) {
+                          final categories = cateState.categories.where((e) => !e.isIncome == widget.isExpense).toList();
+                          return Column(
+                            mainAxisSize: MainAxisSize.min,
+                            children: [
+                              VGap(3.h),
+                              GridView.count(
+                                shrinkWrap: true,
+                                physics: NeverScrollableScrollPhysics(),
+                                crossAxisCount: 4,
+                                mainAxisSpacing: 3.w,
+                                crossAxisSpacing: 3.w,
+                                children: categories
+                                    .map((e) => InkWell(
+                                          onTap: () {
+                                            context.read<ExpenseTrackerBloc>().add(SetCategoryEvent(category: e));
+                                            ctx.maybePop();
+                                          },
+                                          borderRadius: BorderRadius.circular(10),
+                                          child: Container(
+                                            decoration: BoxDecoration(
+                                                borderRadius: BorderRadius.circular(10),
+                                                color: ((widget.transactionModel == null ? state.category : widget.transactionModel!.category) == e.id)
+                                                    ? widget.isExpense
+                                                        ? AppColors.instance.red20
+                                                        : AppColors.instance.green20
+                                                    : null),
+                                            child: Column(
+                                              mainAxisSize: MainAxisSize.min,
+                                              children: [
+                                                VGap(0.3.h),
+                                                Expanded(
+                                                  child: Image.asset(
+                                                    e.imagePath,
+                                                    fit: BoxFit.fill,
+                                                  ),
+                                                ),
+                                                Padding(
+                                                  padding: EdgeInsets.symmetric(vertical: 0.3.h),
+                                                  child: Text(e.name, style: AppTheme.maybeOf(context)?.typography.regular14, maxLines: 1, overflow: TextOverflow.ellipsis),
+                                                ),
+                                              ],
+                                            ),
+                                          ),
+                                        ))
+                                    .toList(),
+                              ),
+                              OutlinedButton(
+                                  onPressed: () async {
+                                    await AddEditNewCategory(isIncome: !widget.isExpense).showSheet(context);
+                                    context.read<CategoriesBloc>().add(LoadCategoriesEvent());
+                                  },
+                                  child: Text("Add New Category")),
+                              VGap(3.h),
+                            ],
+                          );
+                        },
+                      ),
+                    );
+                  },
+                );
+              },
+              child: Container(
+                height: 6.h,
+                margin: EdgeInsets.only(bottom: 2.h),
+                decoration: BoxDecoration(
+                  border: Border.all(),
+                  borderRadius: BorderRadius.circular(12),
+                ),
+                alignment: Alignment.centerLeft,
+                child: state.category == null
+                    ? Padding(
+                        padding: EdgeInsets.symmetric(horizontal: 3.w),
+                        child: Text("--Select Category--"),
+                      )
+                    : Builder(builder: (context) {
+                        try {
+                          return Row(
+                            children: [
+                              HGap(2.w),
+                              Padding(
+                                padding: EdgeInsets.symmetric(vertical: 0.2.h),
+                                child: AspectRatio(
+                                  aspectRatio: 1,
+                                  child: Image.asset(
+                                    cates.firstWhere((e) => e.id == state.category?.id).imagePath,
+                                    fit: BoxFit.fill,
+                                  ),
+                                ),
+                              ),
+                              Padding(
+                                padding: EdgeInsets.symmetric(horizontal: 2.w),
+                                child: Text(cates.firstWhere((e) => e.id == state.category?.id).name,
+                                    style: AppTheme.maybeOf(context)?.typography.regular14, maxLines: 1, overflow: TextOverflow.ellipsis),
+                              ),
+                            ],
+                          );
+                        } catch (e) {
+                          return Text("Error : $e");
+                        }
+                      }),
+              ),
+            ),
+          ],
         );
       },
     );
@@ -311,7 +427,8 @@ class _DescriptionField extends StatelessWidget {
           initialValue: transactionModel?.description,
           hintText: 'Description',
           isDesc: true,
-          errorWidget: state.description.displayError != null ? ErrorText(error: isExpense ? 'Describe where you spend money' : 'Describe the income source') : null,
+          errorWidget: null,
+          // state.description.displayError != null ? ErrorText(error: isExpense ? 'Describe where you spend money' : 'Describe the income source') : null,
           onChanged: (value) {
             context.read<ExpenseTrackerBloc>().add(
                   DescriptionFieldChangeEvent(description: value),
