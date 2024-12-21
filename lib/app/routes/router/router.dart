@@ -1,9 +1,24 @@
 import 'package:auto_route/auto_route.dart';
+import 'package:flutter/cupertino.dart';
 import 'package:montra_clone/app/routes/guards/auth_guard.dart';
 import 'package:montra_clone/app/routes/router/router.gr.dart';
 
+// final navKey = GlobalKey<NavigatorState>();
+
 @AutoRouterConfig(replaceInRouteName: 'Screen|Page,Route')
 class AppRouter extends RootStackRouter {
+
+  // @override
+  // GlobalKey<NavigatorState> get navigatorKey => navKey;
+
+  @override
+  RouteType get defaultRouteType => RouteType.custom(
+        transitionsBuilder: (context, animation, secondaryAnimation, child) => FadeTransition(
+          opacity: animation,
+          child: child,
+        ),
+      );
+
   @override
   List<AutoRoute> get routes => [
         AutoRoute(page: SplashRoute.page, initial: true),

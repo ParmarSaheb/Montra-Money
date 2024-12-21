@@ -25,13 +25,13 @@ class BudgetState extends Equatable {
 
   final BudgetStateStatus status;
   final bool shouldReceiveAlert;
-  final String? category;
+  final CategoryModel? category;
   final double? sliderValue;
   final EmptyFieldValidator amount;
   final bool isValid;
   final String errorMessage;
   final List<BudgetDataModel> budgetDataModelList;
-  final List<String> categoryList;
+  final List<CategoryModel> categoryList;
   final Map<String, double> spentAmountMap;
 
   @override
@@ -51,13 +51,13 @@ class BudgetState extends Equatable {
   BudgetState copyWith({
     BudgetStateStatus? status,
     bool? shouldReceiveAlert,
-    String? category,
+    CategoryModel? category,
     double? sliderValue,
     EmptyFieldValidator? amount,
     bool? isValid,
     String? errorMessage,
     List<BudgetDataModel>? budgetDataModelList,
-    List<String>? categoryList,
+    List<CategoryModel>? categoryList,
     Map<String, double>? spentAmountMap,
   }) {
     return BudgetState(

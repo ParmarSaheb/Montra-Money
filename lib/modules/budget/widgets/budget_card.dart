@@ -1,7 +1,9 @@
 import 'package:flutter/material.dart';
 import 'package:montra_clone/app/app_colors.dart';
+import 'package:montra_clone/core/extensions/to_indian_rupee_extension.dart';
 import 'package:montra_clone/core/widgets/category_chip.dart';
 import 'package:montra_clone/modules/budget/widgets/linear_progress_bar_widget.dart';
+import 'package:montra_clone/modules/categories/models/category_model.dart';
 
 class BudgetCard extends StatelessWidget {
   const BudgetCard({
@@ -13,7 +15,7 @@ class BudgetCard extends StatelessWidget {
     required this.alertLimit,
   });
 
-  final String category;
+  final CategoryModel category;
   final double spentAmount;
   final double budgetAmount;
   final VoidCallback onCardTap;
@@ -26,7 +28,7 @@ class BudgetCard extends StatelessWidget {
     return Container(
       padding: const EdgeInsets.all(8),
       margin: const EdgeInsets.only(top: 8, bottom: 8),
-      height: 187,
+      height: (spentAmount > budgetAmount) ? 180 : 170,
       width: double.infinity,
       decoration: BoxDecoration(
         borderRadius: BorderRadius.circular(16),
@@ -40,8 +42,8 @@ class BudgetCard extends StatelessWidget {
             mainAxisAlignment: MainAxisAlignment.spaceBetween,
             children: [
               CategoryChip(
-                label: getCategoryData(category).$1,
-                color: getCategoryData(category).$2,
+                label: category.name,
+                image: category.imagePath,
               ),
               IconButton(
                 onPressed: onCardTap,
@@ -51,15 +53,15 @@ class BudgetCard extends StatelessWidget {
             ],
           ),
           Text(
-            'Remaining \u{20B9}$remaining',
+            'Remaining ${remaining.toIndianRupeeWith(decimalPoint: 1)}',
             style: const TextStyle(fontWeight: FontWeight.w600, fontSize: 21),
           ),
           LinearProgressBarWidget(
-            color: getCategoryData(category).$2,
+            color: AppColors.instance.primary,
             progressValue: spentAmount / budgetAmount,
           ),
           Text(
-            '\u{20B9}$spentAmount out of \u{20B9}$budgetAmount',
+            '${spentAmount.toIndianRupeeWith(decimalPoint: 1)} out of ${budgetAmount.toIndianRupeeWith(decimalPoint: 1)}',
             style: TextStyle(
               fontWeight: FontWeight.w500,
               fontSize: 16,

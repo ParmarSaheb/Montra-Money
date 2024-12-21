@@ -25,13 +25,13 @@ class SwitchListTileWidget extends StatelessWidget {
         ),
       ),
       subtitle: const Text(
-        'Receive alert when it reaches some point.',
+        'Receive alert when it reaches following point.',
       ),
       thumbColor: WidgetStatePropertyAll(
-        AppColors.instance.light100,
+        value ?  AppColors.instance.light100 : AppColors.instance.primary,
       ),
       trackColor: WidgetStatePropertyAll(
-        AppColors.instance.primary,
+        value ?  AppColors.instance.primary : Colors.white,
       ),
     );
   }

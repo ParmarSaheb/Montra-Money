@@ -21,7 +21,7 @@ Future<void> main() async {
   Bloc.observer = LoggingBlocObserver();
   runApp(MultiBlocProvider(
     providers: [
-      BlocProvider(create: (context) => CategoriesBloc()),
+      BlocProvider(create: (context) => CategoriesBloc()..add(LoadCategoriesEvent())),
     ],
     child: App(),
   ));
@@ -58,6 +58,7 @@ class App extends StatelessWidget {
                 },
                 theme: ThemeData(
                   fontFamily: GoogleFonts.inter().fontFamily,
+                  appBarTheme: AppBarTheme.of(context).copyWith(scrolledUnderElevation: 0, backgroundColor: Colors.transparent)
                 ),
               ),
             );

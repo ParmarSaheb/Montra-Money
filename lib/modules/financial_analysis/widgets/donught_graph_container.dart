@@ -1,4 +1,5 @@
 import 'package:flutter/material.dart';
+import 'package:montra_clone/app_ui/theme/theme.dart';
 import 'package:montra_clone/modules/financial_analysis/model/doughnut_chart_model.dart';
 import 'package:syncfusion_flutter_charts/charts.dart';
 
@@ -33,11 +34,12 @@ class DoughnutGraphContainer extends StatelessWidget {
           series: <CircularSeries>[
             DoughnutSeries<DoughnutChartData, String>(
               dataSource: dataList,
-              xValueMapper: (data, _) => data.category,
+              xValueMapper: (data, _) => data.category.name,
               yValueMapper: (data, _) => (data.value) * totalAmount,
               pointColorMapper: (data, _) => data.color,
               radius: '110%',
               innerRadius: '75%',
+              animationDuration: 700,
             )
           ],
         ),

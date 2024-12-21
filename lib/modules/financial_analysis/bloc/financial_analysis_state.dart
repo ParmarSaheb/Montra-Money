@@ -33,17 +33,17 @@ class FinancialAnalysisState extends Equatable {
 
   @override
   List<Object?> get props => [
-        isAnalysisBudgetType,
-        status,
-        analysisFilterType,
-        transactionList,
-        totalAmount,
-        chartDataList,
-        dataFilterType,
-        categoryRateMap,
-        incomeChartList,
-        expenseChartList,
-      ];
+    isAnalysisBudgetType,
+    status,
+    analysisFilterType,
+    transactionList,
+    totalAmount,
+    chartDataList,
+    dataFilterType,
+    categoryRateMap,
+    incomeChartList,
+    expenseChartList,
+  ];
 
   FinancialAnalysisState copyWith({
     bool? isAnalysisBudgetType,

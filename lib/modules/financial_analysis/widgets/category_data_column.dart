@@ -1,88 +1,58 @@
 import 'package:flutter/material.dart';
 import 'package:montra_clone/app/app_colors.dart';
+import 'package:montra_clone/core/utils/gap.dart';
+import 'package:montra_clone/core/utils/size_config.dart';
 import 'package:montra_clone/core/widgets/category_chip.dart';
+import 'package:montra_clone/modules/expense_tracking/models/transaction_model.dart';
 
 class CategoryDataColumn extends StatelessWidget {
   const CategoryDataColumn({
     super.key,
+    required this.transacList,
     required this.isExpense,
     required this.categoryValueMap,
     required this.totalAmount,
+    required this.onRefresh,
   });
 
+  final List<TransactionModel> transacList;
   final bool isExpense;
   final Map<String, double> categoryValueMap;
   final double totalAmount;
+  final Future<void> Function() onRefresh;
 
   double getAmount(String categoryName) {
     return double.parse(
-      ((categoryValueMap[categoryName]!) * totalAmount).toStringAsFixed(2),
+      ((categoryValueMap[categoryName] ?? 0) * totalAmount).toStringAsFixed(2),
     );
   }
 
   @override
   Widget build(BuildContext context) {
-    return Column(
-      crossAxisAlignment: CrossAxisAlignment.start,
-      children: [
-        if (isExpense) ...[
-          CategoryProgressBar(
-            progressValue: categoryValueMap['Subscription']!,
-            color: AppColors.instance.primary,
-            label: 'Subscription',
-            isExpense: isExpense,
-            amount: getAmount('Subscription'),
-          ),
-          const SizedBox(height: 15),
-          CategoryProgressBar(
-            progressValue: categoryValueMap['Shopping']!,
-            color: AppColors.instance.yellow100,
-            label: 'Shopping',
-            isExpense: isExpense,
-            amount: getAmount('Shopping'),
-          ),
-          const SizedBox(height: 15),
-          CategoryProgressBar(
-            progressValue: categoryValueMap['Transportation']!,
-            color: AppColors.instance.blue100,
-            label: 'Transportation',
-            isExpense: isExpense,
-            amount: getAmount('Transportation'),
-          ),
-          const SizedBox(height: 15),
-          CategoryProgressBar(
-            progressValue: categoryValueMap['Food']!,
-            color: AppColors.instance.red100,
-            label: 'Food',
-            isExpense: isExpense,
-            amount: getAmount('Food'),
-          ),
-        ] else ...[
-          CategoryProgressBar(
-            progressValue: categoryValueMap['Salary']!,
-            color: AppColors.instance.green100,
-            label: 'Salary',
-            isExpense: isExpense,
-            amount: getAmount('Salary'),
-          ),
-          const SizedBox(height: 15),
-          CategoryProgressBar(
-            progressValue: categoryValueMap['Rental Income']!,
-            color: AppColors.instance.yellow100,
-            label: 'Rental Income',
-            isExpense: isExpense,
-            amount: getAmount('Rental Income'),
-          ),
-          const SizedBox(height: 15),
-          CategoryProgressBar(
-            progressValue: categoryValueMap['Interest']!,
-            color: AppColors.instance.blue100,
-            label: 'Interest',
-            isExpense: isExpense,
-            amount: getAmount('Interest'),
-          )
-        ]
-      ],
+    final list = transacList.where((element) => element.isExpense == isExpense).toList();
+    return Expanded(
+      child: RefreshIndicator(
+         onRefresh: onRefresh,
+        child: ListView(
+          // shrinkWrap: true,
+          // crossAxisAlignment: CrossAxisAlignment.start,
+          children: [
+            ...List.generate(
+              list.length,
+              (index) {
+                final tr = list[index];
+                return CategoryProgressBar(
+                  progressValue: categoryValueMap[tr.category?.id] ?? 0,
+                  color: [AppColors.instance.primary, AppColors.instance.yellow100, AppColors.instance.blue100, AppColors.instance.red100][index % 4],
+                  label: tr.category?.name ?? "-",
+                  isExpense: isExpense,
+                  amount: getAmount(tr.category?.id ?? ""),
+                );
+              },
+            ),
+          ],
+        ),
+      ),
     );
   }
 }
@@ -128,13 +98,17 @@ class CategoryProgressBar extends StatelessWidget {
           ],
         ),
         const SizedBox(height: 10),
-        LinearProgressIndicator(
-          value: progressValue,
-          color: color,
-          backgroundColor: AppColors.instance.light20,
-          minHeight: 10,
-          borderRadius: BorderRadius.circular(8),
-        )
+        Padding(
+          padding: EdgeInsets.symmetric(horizontal: 1.w),
+          child: LinearProgressIndicator(
+            value: progressValue,
+            color: color,
+            backgroundColor: AppColors.instance.light20,
+            minHeight: 10,
+            borderRadius: BorderRadius.circular(8),
+          ),
+        ),
+        VGap(1.h),
       ],
     );
   }

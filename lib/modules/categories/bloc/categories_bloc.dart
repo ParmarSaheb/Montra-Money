@@ -1,5 +1,7 @@
 import 'package:bloc/bloc.dart';
 import 'package:equatable/equatable.dart';
+import 'package:flutter/cupertino.dart';
+import 'package:flutter_bloc/flutter_bloc.dart';
 import 'package:montra_clone/app/category_png_icons.dart';
 import 'package:montra_clone/core/utils/callbacks.dart';
 import 'package:montra_clone/core/utils/custom_snackbar.dart';
@@ -10,6 +12,10 @@ import '../models/category_model.dart';
 part 'categories_event.dart';
 
 part 'categories_state.dart';
+
+extension CategoryList on BuildContext {
+  List<CategoryModel> categoryByIncome(bool isIncome) => this.read<CategoriesBloc>().state.categories.where((e) => e.isIncome == isIncome).toList();
+}
 
 class CategoriesBloc extends Bloc<CategoriesEvent, CategoriesState> {
   CategoriesBloc() : super(CategoriesState()) {

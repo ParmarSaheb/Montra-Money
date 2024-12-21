@@ -1,7 +1,7 @@
 import 'package:flutter/material.dart';
-import 'package:flutter_svg/flutter_svg.dart';
 import 'package:montra_clone/app/app_colors.dart';
-import 'package:montra_clone/app/image_paths.dart';
+import 'package:montra_clone/modules/categories/models/category_model.dart';
+import 'package:montra_clone/modules/categories/widgets/category_image.dart';
 
 class AnalysisCard extends StatelessWidget {
   const AnalysisCard({
@@ -13,7 +13,7 @@ class AnalysisCard extends StatelessWidget {
 
   final bool isExpenseAnalysis;
   final String highestAmount;
-  final String category;
+  final CategoryModel? category;
 
   @override
   Widget build(BuildContext context) {
@@ -22,9 +22,7 @@ class AnalysisCard extends StatelessWidget {
       width: double.infinity,
       padding: const EdgeInsets.all(20),
       margin: const EdgeInsets.only(left: 16, right: 16, bottom: 16),
-      decoration: BoxDecoration(
-          borderRadius: BorderRadius.circular(24),
-          color: AppColors.instance.light100),
+      decoration: BoxDecoration(borderRadius: BorderRadius.circular(24), color: AppColors.instance.light100),
       child: Column(
         mainAxisAlignment: MainAxisAlignment.spaceBetween,
         children: [
@@ -59,7 +57,7 @@ class CategoryContainer extends StatelessWidget {
     required this.isExpenseAnalysis,
   });
 
-  final String category;
+  final CategoryModel? category;
   final bool isExpenseAnalysis;
 
   @override
@@ -73,11 +71,11 @@ class CategoryContainer extends StatelessWidget {
       child: Row(
         mainAxisSize: MainAxisSize.min,
         children: [
-          SvgPicture.asset(
-              isExpenseAnalysis ? subscriptionIconPath : salaryIconPath),
+          if(category?.imagePath != null)
+          CategoryImage(category?.imagePath ?? "", height: 20, width: 20),
           const SizedBox(width: 8),
           Text(
-            category,
+            category?.name ?? "-",
             style: const TextStyle(fontSize: 20),
           )
         ],

@@ -1,20 +1,25 @@
 import 'package:flutter/material.dart';
 import 'package:montra_clone/app/app_colors.dart';
+import 'package:montra_clone/app_ui/theme/theme.dart';
+
+import '../../modules/categories/widgets/category_image.dart';
 
 class CategoryChip extends StatelessWidget {
   const CategoryChip({
     super.key,
-    required this.color,
+    this.color,
+    this.image,
     required this.label,
   });
 
-  final Color color;
+  final Color? color;
+  final String? image;
   final String label;
 
   @override
   Widget build(BuildContext context) {
     return Container(
-        padding: const EdgeInsets.all(10),
+        padding: const EdgeInsets.symmetric(horizontal: 10, vertical: 7),
         decoration: BoxDecoration(
           borderRadius: BorderRadius.circular(32),
           border: Border.all(
@@ -24,6 +29,7 @@ class CategoryChip extends StatelessWidget {
         child: Row(
           mainAxisSize: MainAxisSize.min,
           children: [
+            if(color != null)
             Container(
               height: 15,
               width: 15,
@@ -34,10 +40,13 @@ class CategoryChip extends StatelessWidget {
                 ),
               ),
             ),
+            if(image != null)
+              CategoryImage(image!, height: 25, width: 25),
+
             const SizedBox(width: 8),
             Text(
               label,
-              style: const TextStyle(fontWeight: FontWeight.w500),
+              style: context.textTheme?.regular16.copyWith(fontWeight: FontWeight.w400),
             )
           ],
         ));

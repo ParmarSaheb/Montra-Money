@@ -19,7 +19,8 @@ class SliderWidget extends StatelessWidget {
       value: value,
       onChanged: onChanged,
       max: 100,
-      divisions: 5,
+      min: 20,
+      divisions: 8,
       label: label,
       thumbColor: AppColors.instance.violet40,
       overlayColor: WidgetStatePropertyAll(

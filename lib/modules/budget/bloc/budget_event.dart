@@ -9,7 +9,7 @@ class SetCategoryEvent extends BudgetEvent {
     required this.category,
   });
 
-  final String? category;
+  final CategoryModel category;
 
   @override
   List<Object?> get props => [category];
@@ -31,7 +31,11 @@ class SliderChangeEvent extends BudgetEvent {
   List<Object?> get props => [sliderValue];
 }
 
-class ContinueButtonTapEvent extends BudgetEvent {
+class AddEditBudgetEvent extends BudgetEvent {
+  final String? updatableBudgetId;
+
+
+  AddEditBudgetEvent({this.updatableBudgetId});
   @override
   List<Object?> get props => [];
 }
@@ -44,11 +48,17 @@ class AmountTextFieldChangeEvent extends BudgetEvent {
 }
 
 class LoadBudgetDataFromFireStoreEvent extends BudgetEvent {
+  final List<CategoryModel> expenseCates;
+
+  LoadBudgetDataFromFireStoreEvent({required this.expenseCates});
   @override
   List<Object?> get props => [];
 }
 
 class LoadCategoryList extends BudgetEvent {
+  final List<CategoryModel> categories;
+
+  LoadCategoryList({required this.categories});
   @override
   List<Object?> get props => [];
 }

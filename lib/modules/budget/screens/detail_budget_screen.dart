@@ -5,6 +5,7 @@ import 'package:flutter_svg/flutter_svg.dart';
 import 'package:montra_clone/app/app_colors.dart';
 import 'package:montra_clone/app/image_paths.dart';
 import 'package:montra_clone/app/routes/router/router.gr.dart';
+import 'package:montra_clone/core/extensions/to_indian_rupee_extension.dart';
 import 'package:montra_clone/core/utils/custom_snackbar.dart';
 import 'package:montra_clone/core/widgets/alert_message_container.dart';
 import 'package:montra_clone/core/widgets/button_title.dart';
@@ -13,6 +14,7 @@ import 'package:montra_clone/modules/budget/bloc/budget_bloc.dart';
 import 'package:montra_clone/modules/budget/models/budget_data_model.dart';
 import 'package:montra_clone/modules/budget/widgets/category_card.dart';
 import 'package:montra_clone/modules/budget/widgets/linear_progress_bar_widget.dart';
+import 'package:montra_clone/modules/categories/models/category_model.dart';
 import 'package:montra_clone/modules/expense_tracking/widgets/success_dialogue.dart';
 
 @RoutePage()
@@ -90,13 +92,13 @@ class _DetailBudgetScreenState extends State<DetailBudgetScreen> {
           backgroundColor: AppColors.instance.light100,
           centerTitle: true,
           title: const Text('Detail Budget'),
-          leading: IconButton(
-            onPressed: () async {
-              await context.router.replaceAll([const BudgetRoute()],
-                  updateExistingRoutes: false);
-            },
-            icon: Icon(Icons.arrow_back, color: AppColors.instance.dark100),
-          ),
+          // leading: IconButton(
+          //   onPressed: () async {
+          //     await context.router.replaceAll([const BudgetRoute()],
+          //         updateExistingRoutes: false);
+          //   },
+          //   icon: Icon(Icons.arrow_back, color: AppColors.instance.dark100),
+          // ),
           actions: [
             IconButton(
               onPressed: () => _showDeleteBottomSheet(
@@ -118,6 +120,8 @@ class _DetailBudgetScreenState extends State<DetailBudgetScreen> {
               children: [
                 CategoryCard(category: budgetDataModel.category),
                 _RemainingAmountText(remaining: remaining),
+                Text("out of ${budgetDataModel.budgetAmount.toIndianRupeeWith(decimalPoint: 1)}"),
+                const SizedBox(height: 20),
                 _LinearProgressBar(
                   category: budgetDataModel.category,
                   progressValue:
@@ -159,10 +163,9 @@ class _RemainingAmountText extends StatelessWidget {
           ),
           const SizedBox(height: 8),
           Text(
-            '\u{20B9} ${remaining < 0 ? 0.0 : remaining}',
+            '${remaining < 0 ? 0.0 : remaining}'.toIndianRupeeWith(decimalPoint: 1),
             style: const TextStyle(fontWeight: FontWeight.w400, fontSize: 64),
           ),
-          const SizedBox(height: 20),
         ],
       ),
     );
@@ -176,18 +179,13 @@ class _LinearProgressBar extends StatelessWidget {
     required this.progressValue,
   });
 
-  final String category;
+  final CategoryModel category;
   final double progressValue;
 
   @override
   Widget build(BuildContext context) {
     return LinearProgressBarWidget(
-      color: switch (category) {
-        'Shopping' => AppColors.instance.yellow100,
-        'Transportation' => AppColors.instance.blue100,
-        'Food' => AppColors.instance.red100,
-        String() => AppColors.instance.primary
-      },
+      color: AppColors.instance.primary,
       progressValue: progressValue,
       minHeight: 16,
     );

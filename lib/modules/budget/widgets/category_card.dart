@@ -1,7 +1,8 @@
 import 'package:flutter/material.dart';
-import 'package:flutter_svg/flutter_svg.dart';
 import 'package:montra_clone/app/app_colors.dart';
 import 'package:montra_clone/app/image_paths.dart';
+import 'package:montra_clone/modules/categories/models/category_model.dart';
+import 'package:montra_clone/modules/categories/widgets/category_image.dart';
 
 class CategoryCard extends StatelessWidget {
   const CategoryCard({
@@ -9,11 +10,10 @@ class CategoryCard extends StatelessWidget {
     required this.category,
   });
 
-  final String category;
+  final CategoryModel category;
 
   @override
   Widget build(BuildContext context) {
-    final (String, Color) dataRecord = getAssetData(category);
     return Container(
       padding: const EdgeInsets.symmetric(horizontal: 10),
       // width: 160,
@@ -29,22 +29,19 @@ class CategoryCard extends StatelessWidget {
         mainAxisSize: MainAxisSize.min,
         children: [
           Container(
-            height: 40,
-            width: 40,
             padding: const EdgeInsets.all(5),
             decoration: BoxDecoration(
-              color: dataRecord.$2,
-              borderRadius: BorderRadius.circular(
-                8,
-              ),
+              borderRadius: BorderRadius.circular(8),
             ),
-            child: SvgPicture.asset(
-              dataRecord.$1,
+            child: CategoryImage(
+              category.imagePath,
+              height: 40,
+              width: 40,
             ),
           ),
           const SizedBox(width: 10),
           Text(
-            category,
+            category.name ,
             style: TextStyle(
               fontSize: 18,
               fontWeight: FontWeight.w500,

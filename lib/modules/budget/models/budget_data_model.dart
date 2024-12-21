@@ -1,4 +1,5 @@
 import 'package:equatable/equatable.dart';
+import 'package:montra_clone/modules/categories/models/category_model.dart';
 
 class BudgetDataModel extends Equatable {
   const BudgetDataModel({
@@ -11,7 +12,7 @@ class BudgetDataModel extends Equatable {
   });
 
   final int createdAt;
-  final String category;
+  final CategoryModel category;
   final double budgetAmount;
   final String budgetId;
   final double? alertLimit;

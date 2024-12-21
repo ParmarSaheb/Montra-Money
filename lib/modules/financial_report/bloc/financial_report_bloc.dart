@@ -4,13 +4,12 @@ import 'package:cloud_firestore/cloud_firestore.dart';
 import 'package:equatable/equatable.dart';
 import 'package:flutter_bloc/flutter_bloc.dart';
 import 'package:montra_clone/core/utils/fire_store_queries.dart';
+import 'package:montra_clone/modules/categories/models/category_model.dart';
 
 part 'financial_report_event.dart';
-
 part 'financial_report_state.dart';
 
-class FinancialReportBloc
-    extends Bloc<FinancialReportEvent, FinancialReportState> {
+class FinancialReportBloc extends Bloc<FinancialReportEvent, FinancialReportState> {
   FinancialReportBloc() : super(const FinancialReportState()) {
     on<PageChangeEvent>(_setIndex);
     on<FetchThisMonthFinancialReportEvent>(_fetchReportInformation);
@@ -29,12 +28,9 @@ class FinancialReportBloc
   ) async {
     try {
       emit(state.copyWith(status: FinancialReportStateStatus.loading));
-      final querySnapshotData =
-          await FireStoreQueries.instance.getThisMonthExpenseIncomeData();
-      final List<QueryDocumentSnapshot<Map<String, dynamic>>> incomeQueryList =
-          [];
-      final List<QueryDocumentSnapshot<Map<String, dynamic>>> expenseQueryList =
-          [];
+      final querySnapshotData = await FireStoreQueries.instance.getThisMonthExpenseIncomeData();
+      final List<QueryDocumentSnapshot<Map<String, dynamic>>> incomeQueryList = [];
+      final List<QueryDocumentSnapshot<Map<String, dynamic>>> expenseQueryList = [];
       final List<double> incomeAmountList = [];
       final List<double> expenseAmountList = [];
       for (var e in querySnapshotData) {
@@ -46,34 +42,20 @@ class FinancialReportBloc
       }
       for (var e in incomeQueryList) {
         incomeAmountList.add(double.parse(e.data()['transactionAmount']));
-        incomeQueryList.sort(
-          (a, b) => double.parse(b.data()['transactionAmount']).compareTo(
-            double.parse(
-              a.data()['transactionAmount'],
-            ),
-          ),
-        );
       }
+      incomeQueryList.sort((a, b) => double.parse(b.data()['transactionAmount']).compareTo(double.parse(a.data()['transactionAmount'])));
       for (var e in expenseQueryList) {
         expenseAmountList.add(double.parse(e.data()['transactionAmount']));
-        expenseQueryList.sort(
-          (a, b) => double.parse(b.data()['transactionAmount']).compareTo(
-            double.parse(
-              a.data()['transactionAmount'],
-            ),
-          ),
-        );
       }
+      expenseQueryList.sort((a, b) => double.parse(b.data()['transactionAmount']).compareTo(double.parse(a.data()['transactionAmount'])));
       final highestIncome = incomeQueryList.first.data()['transactionAmount'];
       final highestExpense = expenseQueryList.first.data()['transactionAmount'];
-      final String incomeCategory = incomeQueryList.first.data()['category'];
-      final String expenseCategory = expenseQueryList.first.data()['category'];
-      final double totalExpense = expenseAmountList.fold(
-        0,
+      final CategoryModel incomeCategory = CategoryModel.fromJson(incomeQueryList.first.data()['category']);
+      final CategoryModel expenseCategory = CategoryModel.fromJson(expenseQueryList.first.data()['category']);
+      final double totalExpense = expenseAmountList.reduce(
         (previousValue, element) => previousValue + element,
       );
-      final double totalIncome = incomeAmountList.fold(
-        0,
+      final double totalIncome = incomeAmountList.reduce(
         (previousValue, element) => previousValue + element,
       );
       emit(state.copyWith(

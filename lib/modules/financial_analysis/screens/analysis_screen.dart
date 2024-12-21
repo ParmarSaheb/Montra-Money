@@ -3,7 +3,9 @@ import 'package:flutter/material.dart';
 import 'package:flutter_bloc/flutter_bloc.dart';
 import 'package:montra_clone/app/app_colors.dart';
 import 'package:montra_clone/app/routes/router/router.gr.dart';
+import 'package:montra_clone/core/extensions/to_indian_rupee_extension.dart';
 import 'package:montra_clone/core/utils/fire_store_queries.dart';
+import 'package:montra_clone/modules/categories/bloc/categories_bloc.dart';
 import 'package:montra_clone/modules/financial_analysis/bloc/financial_analysis_bloc.dart';
 import 'package:montra_clone/modules/financial_analysis/widgets/category_data_column.dart';
 import 'package:montra_clone/modules/financial_analysis/widgets/donught_graph_container.dart';
@@ -20,7 +22,11 @@ class AnalysisScreen extends StatefulWidget implements AutoRouteWrapper {
   Widget wrappedRoute(BuildContext context) {
     return BlocProvider(
       create: (context) =>
-          FinancialAnalysisBloc()..add(const FetchDataListEvent()),
+      FinancialAnalysisBloc()
+        ..add(FetchDataListEvent(
+          incomeCategories: context.categoryByIncome(true),
+          expenseCategories: context.categoryByIncome(false),
+        )),
       child: this,
     );
   }
@@ -53,74 +59,72 @@ class _AnalysisScreenState extends State<AnalysisScreen> {
           return Padding(
             padding: const EdgeInsets.only(left: 16, right: 16),
             child: Column(
-              crossAxisAlignment: CrossAxisAlignment.start,
               children: [
                 FilterRow(
                   onFilterTap: (filterValue) {
-                    context.read<FinancialAnalysisBloc>().add(
-                          SetFilterTypeEvent(filterName: filterValue),
-                        );
-                    context.read<FinancialAnalysisBloc>().add(
-                          const FetchDataListEvent(),
-                        );
+                    context.read<FinancialAnalysisBloc>().add(SetFilterTypeEvent(filterName: filterValue));
+                    context.read<FinancialAnalysisBloc>().add(FetchDataListEvent(
+                      incomeCategories: context.categoryByIncome(true),
+                      expenseCategories: context.categoryByIncome(false),
+                    ));
                   },
                   isBudgetType: state.isAnalysisBudgetType,
-                  onBudgetTypeTap: () =>
-                      context.read<FinancialAnalysisBloc>().add(
-                            const AnalysisTypeChangeEvent(
-                                isAnalysisBudgetType: true),
-                          ),
-                  onCategoryTypeTap: () =>
-                      context.read<FinancialAnalysisBloc>().add(
-                            const AnalysisTypeChangeEvent(
-                                isAnalysisBudgetType: false),
-                          ),
+                  onBudgetTypeTap: () => context.read<FinancialAnalysisBloc>().add(const AnalysisTypeChangeEvent(isAnalysisBudgetType: true)),
+                  onCategoryTypeTap: () => context.read<FinancialAnalysisBloc>().add(const AnalysisTypeChangeEvent(isAnalysisBudgetType: false)),
                 ),
-                const SizedBox(height: 20),
-                if (state.isAnalysisBudgetType) ...[
-                  _TotalBudget(totalBudget: '\u{20B9}${state.totalAmount}'),
-                  const SizedBox(height: 20),
-                  GraphContainer(
-                    dataList: state.chartDataList,
-                  )
-                ] else ...[
-                  const Text('Report based on category',
-                      style: TextStyle(
-                        fontWeight: FontWeight.bold,
-                        fontSize: 20,
+                const SizedBox(height: 10),
+                Expanded(
+                  child: NestedScrollView(
+                      headerSliverBuilder: (context, innerBoxIsScrolled) {
+                        return [
+                          SliverToBoxAdapter(
+                            child: Column(
+                              children: [
+                                const SizedBox(height: 10),
+                                if (state.isAnalysisBudgetType) ...[
+                                  _TotalBudget(totalBudget: '${state.totalAmount.toIndianRupee}'),
+                                  const SizedBox(height: 20),
+                                  GraphContainer(dataList: state.chartDataList)
+                                ] else
+                                  ...[
+                                    const Text('Report based on category', style: TextStyle(fontWeight: FontWeight.bold, fontSize: 20)),
+                                    const SizedBox(height: 20),
+                                    DoughnutGraphContainer(
+                                      dataList: state.analysisFilterType == AnalysisFilter.expense ? state.expenseChartList : state.incomeChartList,
+                                      totalAmount: state.totalAmount,
+                                    )
+                                  ],
+                                const SizedBox(height: 15),
+                              ],
+                            ),
+                          )
+                        ];
+                      },
+                      body: Column(
+                        crossAxisAlignment: CrossAxisAlignment.start,
+                        children: [
+                          IncomeExpenseFilter(
+                            filterType: state.analysisFilterType,
+                            onIncomeTap: () {
+                              context.read<FinancialAnalysisBloc>().add(const AnalysisFilterChangeEvent(analysisFilter: AnalysisFilter.income));
+                              context.read<FinancialAnalysisBloc>().add(FetchDataListEvent(
+                                incomeCategories: context.categoryByIncome(true),
+                                expenseCategories: context.categoryByIncome(false),
+                              ));
+                            },
+                            onExpenseTap: () {
+                              context.read<FinancialAnalysisBloc>().add(const AnalysisFilterChangeEvent(analysisFilter: AnalysisFilter.expense));
+                              context.read<FinancialAnalysisBloc>().add(FetchDataListEvent(
+                                incomeCategories: context.categoryByIncome(true),
+                                expenseCategories: context.categoryByIncome(false),
+                              ));
+                            },
+                          ),
+                          const SizedBox(height: 10),
+                          state.isAnalysisBudgetType ? const _TransactionList() : const _CategoryDataList()
+                        ],
                       )),
-                  const SizedBox(height: 20),
-                  DoughnutGraphContainer(
-                    dataList: state.analysisFilterType == AnalysisFilter.expense
-                        ? state.expenseChartList
-                        : state.incomeChartList,
-                    totalAmount: state.totalAmount,
-                  )
-                ],
-                const SizedBox(height: 15),
-                IncomeExpenseFilter(
-                  filterType: state.analysisFilterType,
-                  onIncomeTap: () {
-                    context.read<FinancialAnalysisBloc>().add(
-                        const AnalysisFilterChangeEvent(
-                            analysisFilter: AnalysisFilter.income));
-                    context
-                        .read<FinancialAnalysisBloc>()
-                        .add(const FetchDataListEvent());
-                  },
-                  onExpenseTap: () {
-                    context.read<FinancialAnalysisBloc>().add(
-                        const AnalysisFilterChangeEvent(
-                            analysisFilter: AnalysisFilter.expense));
-                    context
-                        .read<FinancialAnalysisBloc>()
-                        .add(const FetchDataListEvent());
-                  },
                 ),
-                const SizedBox(height: 20),
-                state.isAnalysisBudgetType
-                    ? const _TransactionList()
-                    : const _CategoryDataList()
               ],
             ),
           );
@@ -158,7 +162,7 @@ class _TotalBudget extends StatelessWidget {
 }
 
 class _TransactionList extends StatelessWidget {
-  const _TransactionList({super.key});
+  const _TransactionList();
 
   @override
   Widget build(BuildContext context) {
@@ -168,28 +172,37 @@ class _TransactionList extends StatelessWidget {
         return Expanded(
           child: state.status == FinancialAnalysisStateStatus.loading
               ? const Center(
-                  child: CircularProgressIndicator(),
-                )
+            child: CircularProgressIndicator(),
+          )
               : state.status == FinancialAnalysisStateStatus.success
-                  ? list.isEmpty
-                      ? const Center(
-                          child: Text('No Transactions'),
-                        )
-                      : ListView.builder(
-                          itemCount: list.length,
-                          itemBuilder: (context, index) => ExpenseTrackerCard(
-                            category: list[index].category,
-                            isExpense: list[index].isExpense,
-                            amount: list[index].transactionAmount,
-                            description: list[index].description,
-                            createdAt: FireStoreQueries.instance
-                                .getFormatedDate(list[index].createdAt),
-                            onCardTap: () {},
-                          ),
-                        )
-                  : const Center(
-                      child: Text('No data'),
-                    ),
+              ? list.isEmpty
+              ? const Center(child: Text('No Transactions'))
+              : RefreshIndicator(
+            onRefresh: () async {
+              state.analysisFilterType == AnalysisFilter.expense
+                  ? context.read<FinancialAnalysisBloc>().add(FetchDataListEvent(
+                incomeCategories: context.categoryByIncome(true),
+                expenseCategories: context.categoryByIncome(false),
+              ))
+                  : context.read<FinancialAnalysisBloc>().add(FetchDataListEvent(
+                incomeCategories: context.categoryByIncome(true),
+                expenseCategories: context.categoryByIncome(false),
+              ));
+            },
+            child: ListView.builder(
+              itemCount: list.length,
+              itemBuilder: (context, index) =>
+                  ExpenseTrackerCard(
+                    category: list[index].category,
+                    isExpense: list[index].isExpense,
+                    amount: list[index].transactionAmount,
+                    description: list[index].description,
+                    createdAt: FireStoreQueries.instance.getFormatedDate(list[index].createdAt),
+                    onCardTap: () {},
+                  ),
+            ),
+          )
+              : const Center(child: Text('No data')),
         );
       },
     );
@@ -202,14 +215,24 @@ class _CategoryDataList extends StatelessWidget {
   @override
   Widget build(BuildContext context) {
     return BlocBuilder<FinancialAnalysisBloc, FinancialAnalysisState>(
-      buildWhen: (previous, current) =>
-          previous.categoryRateMap != current.categoryRateMap ||
-          previous.analysisFilterType != current.analysisFilterType,
+      buildWhen: (previous, current) => previous.categoryRateMap != current.categoryRateMap || previous.analysisFilterType != current.analysisFilterType,
       builder: (context, state) {
         return CategoryDataColumn(
-          isExpense: state.analysisFilterType == AnalysisFilter.expense,
-          categoryValueMap: state.categoryRateMap,
-          totalAmount: state.totalAmount,
+            transacList: state.transactionList,
+            isExpense: state.analysisFilterType == AnalysisFilter.expense,
+            categoryValueMap: state.categoryRateMap,
+            totalAmount: state.totalAmount,
+            onRefresh: () async {
+              state.analysisFilterType == AnalysisFilter.expense
+                  ? context.read<FinancialAnalysisBloc>().add(FetchDataListEvent(
+                incomeCategories: context.categoryByIncome(true),
+                expenseCategories: context.categoryByIncome(false),
+              ))
+                  : context.read<FinancialAnalysisBloc>().add(FetchDataListEvent(
+                incomeCategories: context.categoryByIncome(true),
+                expenseCategories: context.categoryByIncome(false),
+              ));
+            },
         );
       },
     );

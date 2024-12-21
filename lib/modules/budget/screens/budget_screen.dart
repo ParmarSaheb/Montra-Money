@@ -4,9 +4,11 @@ import 'package:flutter_bloc/flutter_bloc.dart';
 import 'package:montra_clone/app/app_colors.dart';
 import 'package:montra_clone/app/routes/router/router.gr.dart';
 import 'package:montra_clone/core/utils/custom_snackbar.dart';
+import 'package:montra_clone/core/utils/size_config.dart';
 import 'package:montra_clone/modules/budget/bloc/budget_bloc.dart';
 import 'package:montra_clone/modules/budget/widgets/budget_card.dart';
 import 'package:montra_clone/modules/budget/widgets/create_budget_button.dart';
+import 'package:montra_clone/modules/categories/bloc/categories_bloc.dart';
 
 @RoutePage()
 class BudgetScreen extends StatefulWidget implements AutoRouteWrapper {
@@ -16,8 +18,8 @@ class BudgetScreen extends StatefulWidget implements AutoRouteWrapper {
   Widget wrappedRoute(BuildContext context) {
     return BlocProvider(
       create: (context) => BudgetBloc()
-        ..add(LoadBudgetDataFromFireStoreEvent())
-        ..add(LoadCategoryList()),
+        ..add(LoadBudgetDataFromFireStoreEvent(expenseCates: context.categoryByIncome(false)))
+        ..add(LoadCategoryList(categories: context.categoryByIncome(false))),
       child: this,
     );
   }
@@ -30,7 +32,7 @@ class _BudgetScreenState extends State<BudgetScreen> {
   @override
   void initState() {
     super.initState();
-    context.read<BudgetBloc>().add(LoadBudgetDataFromFireStoreEvent());
+    context.read<BudgetBloc>().add(LoadBudgetDataFromFireStoreEvent(expenseCates: context.categoryByIncome(false)));
   }
 
   final String createBudget = 'You don\'t have any budgets yet,Let\'s create one so you can track your expense.';
@@ -63,51 +65,55 @@ class _BudgetScreenState extends State<BudgetScreen> {
                         topRight: Radius.circular(24),
                       ),
                     ),
-                    child: ListView(
-                      padding: const EdgeInsets.symmetric(horizontal: 16),
-                      physics: NeverScrollableScrollPhysics(),
-                      shrinkWrap: true,
-                      children: [
-                        if (state.status == BudgetStateStatus.loading) ...[
-                          // const Spacer(),
-                          const Center(child: CircularProgressIndicator()),
-                          // const Spacer()
-                        ] else if (state.status == BudgetStateStatus.success) ...[
-                          if (state.budgetDataModelList.isEmpty) ...[
+                    child: RefreshIndicator(
+                      onRefresh: () async {
+                        context.read<BudgetBloc>().add(LoadBudgetDataFromFireStoreEvent(expenseCates: context.categoryByIncome(false)));
+                      },
+                      child: ListView(
+                        padding: const EdgeInsets.symmetric(horizontal: 16),
+                        // physics: NeverScrollableScrollPhysics(),
+                        children: [
+                          if (state.status == BudgetStateStatus.loading) ...[
                             // const Spacer(),
-                            Center(
-                              child: Text(
-                                createBudget,
-                                textAlign: TextAlign.center,
-                                style: TextStyle(
-                                  color: AppColors.instance.dark25,
-                                  fontSize: 20,
+                            SizedBox(height: 70.h, child: const Center(child: CircularProgressIndicator())),
+                            // const Spacer()
+                          ] else if (state.status == BudgetStateStatus.success) ...[
+                            if (state.budgetDataModelList.isEmpty) ...[
+                              // const Spacer(),
+                              Center(
+                                child: Text(
+                                  createBudget,
+                                  textAlign: TextAlign.center,
+                                  style: TextStyle(
+                                    color: AppColors.instance.dark25,
+                                    fontSize: 20,
+                                  ),
                                 ),
                               ),
-                            ),
-                            // const Spacer(),
-                          ] else
-                            ListView.builder(
-                              shrinkWrap: true,
-                              physics: const ScrollPhysics(),
-                              itemCount: state.budgetDataModelList.length,
-                              itemBuilder: (context, index) => BudgetCard(
-                                category: state.budgetDataModelList[index].category,
-                                spentAmount: state.spentAmountMap[state.budgetDataModelList[index].category] ?? 0.0,
-                                budgetAmount: state.budgetDataModelList[index].budgetAmount,
-                                alertLimit: state.budgetDataModelList[index].alertLimit,
-                                onCardTap: () {
-                                  context.pushRoute(
-                                    DetailBudgetRoute(
-                                      budgetModel: state.budgetDataModelList[index],
-                                      spentAmount: state.spentAmountMap[state.budgetDataModelList[index].category] ?? 0.0,
-                                    ),
+                              // const Spacer(),
+                            ] else
+                              ...List.generate(
+                                state.budgetDataModelList.length,
+                                (index) {
+                                  return BudgetCard(
+                                    category: state.budgetDataModelList[index].category,
+                                    spentAmount: state.spentAmountMap[state.budgetDataModelList[index].category.id] ?? 0.0,
+                                    budgetAmount: state.budgetDataModelList[index].budgetAmount,
+                                    alertLimit: state.budgetDataModelList[index].alertLimit,
+                                    onCardTap: () {
+                                      context.pushRoute(
+                                        DetailBudgetRoute(
+                                          budgetModel: state.budgetDataModelList[index],
+                                          spentAmount: state.spentAmountMap[state.budgetDataModelList[index].category.id] ?? 0.0,
+                                        ),
+                                      );
+                                    },
                                   );
                                 },
                               ),
-                            ),
+                          ],
                         ],
-                      ],
+                      ),
                     ),
                   ),
                 );

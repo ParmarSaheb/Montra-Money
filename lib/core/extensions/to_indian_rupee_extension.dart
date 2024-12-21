@@ -3,7 +3,7 @@ import 'package:intl/intl.dart';
 var _format = NumberFormat.currency(
   name: "",
   locale: 'HI',
-  decimalDigits: 2,
+  decimalDigits: 1,
   // change it to get decimal places
   symbol: '₹',
 );
@@ -40,7 +40,7 @@ extension IndianCurrencyFormattForString on String {
     return _format.format(num.tryParse(this) ?? 0);
   }
 
-  String toIndianRupeeWith({bool showSymbol = true, int decimalPoint = 2}) {
+  String toIndianRupeeWith({bool showSymbol = true, int decimalPoint = 1}) {
     return _formatWith(showSymbol: showSymbol, decimalPoint: decimalPoint).format(num.tryParse(this) ?? 0);
   }
 }

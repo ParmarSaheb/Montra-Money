@@ -1,6 +1,9 @@
 import 'package:flutter/cupertino.dart';
 import 'package:montra_clone/app/app_colors.dart';
 import 'package:montra_clone/app/image_paths.dart';
+import 'package:montra_clone/core/utils/gap.dart';
+import 'package:montra_clone/core/utils/size_config.dart';
+import 'package:montra_clone/modules/categories/models/category_model.dart';
 import 'package:montra_clone/modules/financial_report/widgets/analysis_card.dart';
 
 class AnalysisPageViewWidget extends StatelessWidget {
@@ -15,7 +18,7 @@ class AnalysisPageViewWidget extends StatelessWidget {
   final bool isExpenseAnalysis;
   final String totalAmount;
   final String highestAmount;
-  final String category;
+  final CategoryModel? category;
 
   @override
   Widget build(BuildContext context) {
@@ -29,12 +32,16 @@ class AnalysisPageViewWidget extends StatelessWidget {
       child: Column(
         mainAxisAlignment: MainAxisAlignment.spaceBetween,
         children: [
-          Text(
-            'This Month',
-            style: TextStyle(
-              color: AppColors.instance.light100.withOpacity(0.8),
-              fontWeight: FontWeight.bold,
-              fontSize: 24,
+
+          Padding(
+            padding: EdgeInsets.only(top: 0.5.h),
+            child: Text(
+              'This Month',
+              style: TextStyle(
+                color: AppColors.instance.light100.withOpacity(0.8),
+                fontWeight: FontWeight.bold,
+                fontSize: 24,
+              ),
             ),
           ),
           Column(

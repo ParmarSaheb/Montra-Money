@@ -29,22 +29,14 @@ class IncomeExpenseFilter extends StatelessWidget {
         children: [
           SubButton(
             buttonLabel: 'Expense',
-            buttonColor: filterType == AnalysisFilter.expense
-                ? AppColors.instance.primary
-                : Colors.transparent,
-            textColor: filterType == AnalysisFilter.expense
-                ? AppColors.instance.light100
-                : AppColors.instance.dark100,
+            buttonColor: filterType == AnalysisFilter.expense ? AppColors.instance.primary : Colors.transparent,
+            textColor: filterType == AnalysisFilter.expense ? AppColors.instance.light100 : AppColors.instance.dark100,
             onButtonTap: onExpenseTap,
           ),
           SubButton(
             buttonLabel: 'Income',
-            buttonColor: filterType == AnalysisFilter.income
-                ? AppColors.instance.primary
-                : Colors.transparent,
-            textColor: filterType == AnalysisFilter.income
-                ? AppColors.instance.light100
-                : AppColors.instance.dark100,
+            buttonColor: filterType == AnalysisFilter.income ? AppColors.instance.primary : Colors.transparent,
+            textColor: filterType == AnalysisFilter.income ? AppColors.instance.light100 : AppColors.instance.dark100,
             onButtonTap: onIncomeTap,
           ),
         ],

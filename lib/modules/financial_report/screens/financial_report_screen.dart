@@ -4,6 +4,7 @@ import 'package:flutter/services.dart';
 import 'package:flutter_bloc/flutter_bloc.dart';
 import 'package:montra_clone/app/app_colors.dart';
 import 'package:montra_clone/app/routes/router/router.gr.dart';
+import 'package:montra_clone/core/extensions/to_indian_rupee_extension.dart';
 import 'package:montra_clone/core/widgets/button_title.dart';
 import 'package:montra_clone/core/widgets/custom_elevated_button.dart';
 import 'package:montra_clone/modules/financial_report/bloc/financial_report_bloc.dart';
@@ -11,15 +12,13 @@ import 'package:montra_clone/modules/financial_report/widgets/analysis_pageview_
 import 'package:montra_clone/modules/financial_report/widgets/page_slide_container.dart';
 
 @RoutePage()
-class FinancialReportScreen extends StatelessWidget
-    implements AutoRouteWrapper {
+class FinancialReportScreen extends StatelessWidget implements AutoRouteWrapper {
   const FinancialReportScreen({super.key});
 
   @override
   Widget wrappedRoute(BuildContext context) {
     return BlocProvider(
-      create: (context) => FinancialReportBloc()
-        ..add(const FetchThisMonthFinancialReportEvent()),
+      create: (context) => FinancialReportBloc()..add(const FetchThisMonthFinancialReportEvent()),
       child: this,
     );
   }
@@ -50,23 +49,19 @@ class FinancialReportScreen extends StatelessWidget
                   Expanded(
                     child: PageView(
                       onPageChanged: (value) {
-                        context
-                            .read<FinancialReportBloc>()
-                            .add(PageChangeEvent(index: value));
+                        context.read<FinancialReportBloc>().add(PageChangeEvent(index: value));
                       },
                       children: [
                         AnalysisPageViewWidget(
                           isExpenseAnalysis: true,
-                          totalAmount:
-                              '\u{20B9}${double.parse(state.totalExpense).toStringAsFixed(2)}',
-                          highestAmount: '\u{20B9}${state.highestExpense}',
+                          totalAmount: '${double.parse(state.totalExpense).toIndianRupeeWith(decimalPoint: 1)}',
+                          highestAmount: '${state.highestExpense.toIndianRupee}',
                           category: state.expenseCategory,
                         ),
                         AnalysisPageViewWidget(
                           isExpenseAnalysis: false,
-                          totalAmount:
-                              '\u{20B9}${double.parse(state.totalIncome).toStringAsFixed(2)}',
-                          highestAmount: '\u{20B9}${state.highestIncome}',
+                          totalAmount: '${double.parse(state.totalIncome).toIndianRupeeWith(decimalPoint: 1)}',
+                          highestAmount: '${state.highestIncome.toIndianRupee}',
                           category: state.incomeCategory,
                         ),
                         LastPageView(
@@ -113,23 +108,25 @@ class LastPageView extends StatelessWidget {
           ),
           const SizedBox(height: 5),
           Text(
-            '-Robert Kiyosaki',
+            '~Robert Kiyosaki',
             textAlign: TextAlign.start,
             style: TextStyle(
-              fontWeight: FontWeight.bold,
-              fontSize: 24,
+              fontWeight: FontWeight.w500,
+              fontSize: 20,
               color: AppColors.instance.light100,
             ),
           ),
           const Spacer(),
+          const Spacer(),
           CustomElevatedButton(
-              buttonLabel: const ButtonTitle(
-                isPurple: false,
-                buttonLabel: 'See the full details',
-              ),
+            buttonLabel: const ButtonTitle(
               isPurple: false,
-              onPressed: onTap),
-          const SizedBox(height: 20),
+              buttonLabel: 'See the full details',
+            ),
+            isPurple: false,
+            onPressed: onTap,
+          ),
+          const Spacer(),
         ],
       ),
     );

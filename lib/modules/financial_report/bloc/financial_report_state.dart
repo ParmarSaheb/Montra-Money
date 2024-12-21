@@ -10,15 +10,15 @@ class FinancialReportState extends Equatable {
       this.highestIncome = '0',
       this.totalIncome = '0',
       this.totalExpense = '0',
-      this.expenseCategory = 'Expense',
-      this.incomeCategory = 'Income'});
+      this.expenseCategory,
+      this.incomeCategory});
 
   final FinancialReportStateStatus status;
   final int currentIndex;
   final String totalIncome;
   final String totalExpense;
-  final String incomeCategory;
-  final String expenseCategory;
+  final CategoryModel? incomeCategory;
+  final CategoryModel? expenseCategory;
   final String highestIncome;
   final String highestExpense;
 
@@ -38,8 +38,8 @@ class FinancialReportState extends Equatable {
     int? currentIndex,
     String? totalIncome,
     String? totalExpense,
-    String? incomeCategory,
-    String? expenseCategory,
+    CategoryModel? incomeCategory,
+    CategoryModel? expenseCategory,
     String? highestIncome,
     String? highestExpense,
   }) {

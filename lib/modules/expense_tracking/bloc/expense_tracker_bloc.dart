@@ -5,6 +5,7 @@ import 'package:equatable/equatable.dart';
 import 'package:flutter_bloc/flutter_bloc.dart';
 import 'package:formz/formz.dart';
 import 'package:montra_clone/core/repository/authentication_repository.dart';
+import 'package:montra_clone/core/utils/devlog.dart';
 import 'package:montra_clone/core/validators/empty_field_validator.dart';
 import 'package:montra_clone/modules/categories/models/category_model.dart';
 import 'package:montra_clone/modules/expense_tracking/models/transaction_model.dart';
@@ -102,6 +103,7 @@ class ExpenseTrackerBloc
   }
 
   void _setCategory(SetCategoryEvent event, Emitter<ExpenseTrackerState> emit) {
+    devlog("_setCategory  : ${event.category}");
     emit(state.copyWith(category: event.category, status: ExpenseTrackerStateStatus.success));
   }
 

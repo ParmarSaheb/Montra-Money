@@ -5,6 +5,8 @@ import 'package:montra_clone/app/app_colors.dart';
 import 'package:montra_clone/app/routes/router/router.gr.dart';
 import 'package:montra_clone/core/utils/devlog.dart';
 import 'package:montra_clone/core/utils/fire_store_queries.dart';
+import 'package:montra_clone/core/utils/gap.dart';
+import 'package:montra_clone/core/utils/size_config.dart';
 import 'package:montra_clone/modules/home/widgets/expense_tracker_card.dart';
 import 'package:montra_clone/modules/transaction/bloc/transaction_bloc.dart';
 import 'package:montra_clone/modules/transaction/widgets/current_filter_container.dart';
@@ -194,7 +196,8 @@ class _TransactionScreenState extends State<TransactionScreen> {
                                   )
                         : const SizedBox();
               },
-            )
+            ),
+            VGap(5.h),
           ],
         ),
       ),

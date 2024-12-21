@@ -4,11 +4,16 @@ import 'package:cloud_firestore/cloud_firestore.dart';
 import 'package:equatable/equatable.dart';
 import 'package:flutter_bloc/flutter_bloc.dart';
 import 'package:formz/formz.dart';
+import 'package:montra_clone/app/routes/router/router.dart';
+import 'package:montra_clone/core/utils/devlog.dart';
 import 'package:montra_clone/core/utils/fire_store_queries.dart';
 import 'package:montra_clone/core/validators/empty_field_validator.dart';
 import 'package:montra_clone/modules/budget/models/budget_data_model.dart';
+import 'package:montra_clone/modules/categories/bloc/categories_bloc.dart';
+import 'package:montra_clone/modules/categories/models/category_model.dart';
 
 part 'budget_event.dart';
+
 part 'budget_state.dart';
 
 class BudgetBloc extends Bloc<BudgetEvent, BudgetState> {
@@ -18,7 +23,7 @@ class BudgetBloc extends Bloc<BudgetEvent, BudgetState> {
     on<ReceiveAlertSwitchChangeEvent>(_setSwitchValue);
     on<SliderChangeEvent>(_setSliderValue);
     on<LoadCategoryList>(_loadCategoryList);
-    on<ContinueButtonTapEvent>(_addDataToFireStore);
+    on<AddEditBudgetEvent>(_addEditBudget);
     on<LoadBudgetDataFromFireStoreEvent>(_loadData);
     on<DeleteBudgetEvent>(_deleteBudget);
     on<UpdateBudgetEvent>(_updateBudget);
@@ -60,8 +65,8 @@ class BudgetBloc extends Bloc<BudgetEvent, BudgetState> {
     );
   }
 
-  Future<void> _addDataToFireStore(
-    ContinueButtonTapEvent event,
+  Future<void> _addEditBudget(
+    AddEditBudgetEvent event,
     Emitter<BudgetState> emit,
   ) async {
     try {
@@ -76,28 +81,24 @@ class BudgetBloc extends Bloc<BudgetEvent, BudgetState> {
       );
       if (state.isValid) {
         if (state.category != null) {
-          final collectionReference =
-              await FireStoreQueries.instance.getBudgetCollectionReference();
-          if (state.shouldReceiveAlert) {
-            emit(state.copyWith(status: BudgetStateStatus.loading));
-            await collectionReference.add({
-              'createdAt': DateTime.now().millisecondsSinceEpoch,
-              'category': state.category,
-              'budgetAmount': double.parse(state.amount.value),
-              'alertLimit': state.sliderValue,
-              'shouldReceiveAlert': state.shouldReceiveAlert,
-            });
-            emit(state.copyWith(status: BudgetStateStatus.success));
-          } else {
-            emit(state.copyWith(status: BudgetStateStatus.loading));
-            await collectionReference.add({
-              'createdAt': DateTime.now().millisecondsSinceEpoch,
-              'category': state.category,
-              'budgetAmount': double.parse(state.amount.value),
-              'shouldReceiveAlert': state.shouldReceiveAlert,
-            });
-            emit(state.copyWith(status: BudgetStateStatus.success));
-          }
+          final ref = await FireStoreQueries.instance.getBudgetCollectionReference();
+          final id = event.updatableBudgetId ?? ref.doc().id;
+          emit(state.copyWith(status: BudgetStateStatus.loading));
+          final data = {
+            "id": id,
+            if (event.updatableBudgetId == null) 'createdAt': DateTime.now().millisecondsSinceEpoch,
+            'updatedAt': DateTime.now().microsecondsSinceEpoch,
+            'category': state.category?.toJson(),
+            'budgetAmount': double.tryParse(state.amount.value) ?? 0,
+            if (state.shouldReceiveAlert) 'alertLimit': state.sliderValue,
+            'shouldReceiveAlert': state.shouldReceiveAlert,
+          };
+          if (event.updatableBudgetId == null)
+            await ref.doc(id).set(data);
+          else
+            await ref.doc(id).update(data);
+
+          emit(state.copyWith(status: BudgetStateStatus.success));
         } else {
           emit(state.copyWith(
             status: BudgetStateStatus.failure,
@@ -106,9 +107,8 @@ class BudgetBloc extends Bloc<BudgetEvent, BudgetState> {
         }
       }
     } catch (e) {
-      emit(state.copyWith(
-          status: BudgetStateStatus.failure,
-          errorMessage: 'Something went wrong,Please try again later'));
+      devlogError("error : $e");
+      emit(state.copyWith(status: BudgetStateStatus.failure, errorMessage: 'Something went wrong,Please try again later'));
     }
   }
 
@@ -117,30 +117,31 @@ class BudgetBloc extends Bloc<BudgetEvent, BudgetState> {
         await FireStoreQueries.instance.getThisMonthBudgetData();
     final List<BudgetDataModel> budgetDataModelList = [];
     for (var element in queryDocSnapshot) {
+      devlog("budgetDataModelList ${element.data()['category']}");
       budgetDataModelList.add(
         BudgetDataModel(
           createdAt: element.data()['createdAt'],
-          category: element.data()['category'],
+          category: CategoryModel.fromJson(element.data()['category']),
           budgetAmount: (element.data()['budgetAmount']).toDouble(),
           budgetId: element.id,
-          alertLimit: (element.data()['shouldReceiveAlert'] == false)
-              ? null
-              : (element.data()['alertLimit']).toDouble(),
+          alertLimit: (element.data()['shouldReceiveAlert'] == false) ? null : (element.data()['alertLimit']).toDouble(),
           shouldReceiveAlert: element.data()['shouldReceiveAlert'],
         ),
       );
     }
+    devlog("budgetDataModelList : ${budgetDataModelList.map((e) => e.category.name)}");
     return budgetDataModelList;
   }
 
   Map<String, double> getCategoryMap(
-      List<QueryDocumentSnapshot<Map<String, dynamic>>> queryDocSnapshot) {
-    final categoryList = ['Food', 'Subscription', 'Shopping', 'Transportation'];
+      List<QueryDocumentSnapshot<Map<String, dynamic>>> queryDocSnapshot, List<CategoryModel> categoryList) {
+    // final categoryList = navKey.currentContext?.categoryByIncome(false) ?? [CategoryModel.empty()];
+    devlog("categoryList : ${categoryList}");
     final Map<String, double> categoryMap = {};
     for (var category in categoryList) {
       final spentAmountList = [];
       for (var a in queryDocSnapshot) {
-        if (a.data()['category'] == category) {
+        if (a.data()['category']['id'] == category.id) {
           spentAmountList.add(double.parse(a.data()['transactionAmount']));
         }
       }
@@ -148,7 +149,7 @@ class BudgetBloc extends Bloc<BudgetEvent, BudgetState> {
         0.0,
         (previousValue, element) => previousValue + element,
       );
-      categoryMap[category] = amount;
+      categoryMap[category.id] = amount;
     }
     return categoryMap;
   }
@@ -162,7 +163,7 @@ class BudgetBloc extends Bloc<BudgetEvent, BudgetState> {
       final budgetDataList = await getBudgetData();
       final queryDocSnapshot =
           await FireStoreQueries.instance.getThisMonthExpenseIncomeData();
-      final categoryMap = getCategoryMap(queryDocSnapshot);
+      final categoryMap = getCategoryMap(queryDocSnapshot, event.expenseCates);
       emit(state.copyWith(
         status: BudgetStateStatus.success,
         spentAmountMap: categoryMap,
@@ -181,19 +182,13 @@ class BudgetBloc extends Bloc<BudgetEvent, BudgetState> {
     Emitter<BudgetState> emit,
   ) async {
     try {
-      final categoryList = [
-        'Food',
-        'Subscription',
-        'Shopping',
-        'Transportation'
-      ];
-      final ref =
-          await FireStoreQueries.instance.getBudgetCollectionReference();
+      List<CategoryModel> categoryList = event.categories;
+      final ref = await FireStoreQueries.instance.getBudgetCollectionReference();
       final snapshot = await ref.get();
       final dataList = snapshot.docs;
       if (dataList.isNotEmpty) {
         for (var e in dataList) {
-          if (categoryList.contains(e.data()['category'])) {
+          if (categoryList.contains(e.data()['category']['id'])) {
             categoryList.remove(e.data()['category']);
           }
         }

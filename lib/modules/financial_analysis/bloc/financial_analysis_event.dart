@@ -23,7 +23,11 @@ class AnalysisFilterChangeEvent extends FinancialAnalysisEvent {
 }
 
 class FetchDataListEvent extends FinancialAnalysisEvent {
-  const FetchDataListEvent();
+  final List<CategoryModel> expenseCategories;
+  final List<CategoryModel> incomeCategories;
+
+  FetchDataListEvent({required this.expenseCategories, required this.incomeCategories});
+
   @override
   List<Object?> get props => [];
 }

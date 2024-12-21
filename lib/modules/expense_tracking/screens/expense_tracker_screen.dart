@@ -11,7 +11,7 @@ import 'package:montra_clone/core/widgets/button_title.dart';
 import 'package:montra_clone/core/widgets/custom_elevated_button.dart';
 import 'package:montra_clone/core/widgets/custom_text_field.dart';
 import 'package:montra_clone/modules/categories/bloc/categories_bloc.dart';
-import 'package:montra_clone/modules/categories/widgets/add_edit_new_category.dart';
+import 'package:montra_clone/modules/categories/widgets/category_selection_field.dart';
 import 'package:montra_clone/modules/expense_tracking/bloc/expense_tracker_bloc.dart';
 import 'package:montra_clone/modules/expense_tracking/models/transaction_model.dart';
 import 'package:montra_clone/modules/expense_tracking/widgets/delete_alert_dialogue.dart';
@@ -77,7 +77,7 @@ class _ExpenseTrackerScreenState extends State<ExpenseTrackerScreen> {
 
   @override
   Widget build(BuildContext context) {
-    return BlocListener<ExpenseTrackerBloc, ExpenseTrackerState>(
+    return BlocConsumer<ExpenseTrackerBloc, ExpenseTrackerState>(
       listener: (context, state) async {
         if (state.status == ExpenseTrackerStateStatus.failure) {
           return showToast(
@@ -101,133 +101,138 @@ class _ExpenseTrackerScreenState extends State<ExpenseTrackerScreen> {
         context.read<HomeBloc>().add(const FetchAmountDetails());
         context.read<HomeBloc>().add(const FetchDataOfCurrentDay());
       },
-      child: AnimatedContainer(
-        duration: Duration(milliseconds: 300),
-        color: isExpense ? AppColors.instance.red60 : AppColors.instance.green80,
-        child: Scaffold(
-          backgroundColor: Colors.transparent,
-          appBar: AppBar(
+      builder: (context, state) {
+        return AnimatedContainer(
+          duration: Duration(milliseconds: 300),
+          color: isExpense ? AppColors.instance.red60 : AppColors.instance.green80,
+          child: Scaffold(
             backgroundColor: Colors.transparent,
-            iconTheme: IconThemeData(color: Colors.white),
-            centerTitle: true,
-            titleSpacing: 0,
-            title: Row(
+            appBar: AppBar(
+              backgroundColor: Colors.transparent,
+              iconTheme: IconThemeData(color: Colors.white),
+              centerTitle: true,
+              titleSpacing: 0,
+              title: Row(
+                children: [
+                  Expanded(
+                    child: InkWell(
+                      onTap: () => setState(() {
+                        isExpense = false;
+                        context.read<ExpenseTrackerBloc>().add(SetCategoryEvent(category: CategoryModel.empty()));
+                      }),
+                      child: AnimatedOpacity(
+                        duration: Duration(milliseconds: 100),
+                        opacity: !isExpense ? 1 : 0.7,
+                        child: Padding(
+                          padding: const EdgeInsets.all(8.0),
+                          child: Row(
+                            mainAxisAlignment: MainAxisAlignment.center,
+                            children: [
+                              if (!isExpense) Icon(Icons.check_circle),
+                              HGap(1.w),
+                              Text("Income", style: AppTheme.maybeOf(context)?.typography.title18.copyWith(color: Colors.white)),
+                            ],
+                          ),
+                        ),
+                      ),
+                    ),
+                  ),
+                  Expanded(
+                    child: InkWell(
+                      onTap: () => setState(() {
+                        isExpense = true;
+                        context.read<ExpenseTrackerBloc>().add(SetCategoryEvent(category: CategoryModel.empty()));
+                      }),
+                      child: AnimatedOpacity(
+                        duration: Duration(milliseconds: 100),
+                        opacity: isExpense ? 1 : 0.7,
+                        child: Padding(
+                          padding: const EdgeInsets.all(8.0),
+                          child: Row(
+                            mainAxisAlignment: MainAxisAlignment.center,
+                            children: [
+                              if (isExpense) Icon(Icons.check_circle),
+                              HGap(1.w),
+                              Text("Expense", style: AppTheme.maybeOf(context)?.typography.title18.copyWith(color: Colors.white)),
+                            ],
+                          ),
+                        ),
+                      ),
+                    ),
+                  ),
+                  HGap(10.w),
+                ],
+              ),
+            ),
+            body: Column(
+              crossAxisAlignment: CrossAxisAlignment.start,
+              mainAxisAlignment: MainAxisAlignment.end,
               children: [
-                Expanded(
-                  child: InkWell(
-                    onTap: () => setState(() {
-                      isExpense = false;
-                      context.read<ExpenseTrackerBloc>().add(SetCategoryEvent(category: CategoryModel.empty()));
-                    }),
-                    child: AnimatedOpacity(
-                      duration: Duration(milliseconds: 100),
-                      opacity: !isExpense ? 1 : 0.7,
-                      child: Padding(
-                        padding: const EdgeInsets.all(8.0),
-                        child: Row(
-                          mainAxisAlignment: MainAxisAlignment.center,
-                          children: [
-                            if (!isExpense) Icon(Icons.check_circle),
-                            HGap(1.w),
-                            Text("Income", style: AppTheme.maybeOf(context)?.typography.title18.copyWith(color: Colors.white)),
-                          ],
-                        ),
-                      ),
+                Padding(
+                  padding: const EdgeInsets.only(left: 16),
+                  child: Text(
+                    'How much?',
+                    style: TextStyle(
+                      color: AppColors.instance.light80,
+                      fontSize: 18,
                     ),
                   ),
                 ),
-                Expanded(
-                  child: InkWell(
-                    onTap: () => setState(() {
-                      isExpense = true;
-                      context.read<ExpenseTrackerBloc>().add(SetCategoryEvent(category: CategoryModel.empty()));
-                    }),
-                    child: AnimatedOpacity(
-                      duration: Duration(milliseconds: 100),
-                      opacity: isExpense ? 1 : 0.7,
-                      child: Padding(
-                        padding: const EdgeInsets.all(8.0),
-                        child: Row(
-                          mainAxisAlignment: MainAxisAlignment.center,
-                          children: [
-                            if (isExpense) Icon(Icons.check_circle),
-                            HGap(1.w),
-                            Text("Expense", style: AppTheme.maybeOf(context)?.typography.title18.copyWith(color: Colors.white)),
-                          ],
-                        ),
+                _AmountTextField(
+                  transactionModel: widget.transactionModel,
+                ),
+                const SizedBox(height: 20),
+                Flexible(
+                  child: Container(
+                    padding: const EdgeInsets.only(top: 10),
+                    decoration: BoxDecoration(
+                      borderRadius: const BorderRadius.only(
+                        topRight: Radius.circular(32),
+                        topLeft: Radius.circular(32),
                       ),
+                      color: AppColors.instance.light100,
+                    ),
+                    child: ListView(
+                      shrinkWrap: true,
+                      // physics: const NeverScrollableScrollPhysics(),
+                      padding: const EdgeInsets.only(
+                        top: 24,
+                        right: 16,
+                        left: 16,
+                        bottom: 24,
+                      ),
+                      children: [
+                        CategorySelectionField(
+                          cates: context.read<CategoriesBloc>().state.categories.where((e) => !e.isIncome == isExpense).toList(),
+                          isExpense: isExpense,
+                          selectedCategoryId: state.category?.id,
+                          transactionModel: widget.transactionModel,
+                          onSelect: (category) => context.read<ExpenseTrackerBloc>().add(SetCategoryEvent(category: category)),
+                        ),
+                        _DescriptionField(
+                          isExpense: isExpense,
+                          transactionModel: widget.transactionModel,
+                        ),
+                        VGap(3.h),
+                        _ContinueButton(
+                          isExpense: isExpense,
+                          transactionModel: widget.transactionModel,
+                        ),
+                        if (widget.transactionModel != null)
+                          _DeleteButton(
+                            transactionModel: widget.transactionModel!,
+                            showDeleteAlertDialogue: _showDeleteAlertDialogue,
+                          ),
+                        VGap(1.h),
+                      ],
                     ),
                   ),
-                ),
-                HGap(10.w),
+                )
               ],
             ),
           ),
-          body: Column(
-            crossAxisAlignment: CrossAxisAlignment.start,
-            mainAxisAlignment: MainAxisAlignment.end,
-            children: [
-              Padding(
-                padding: const EdgeInsets.only(left: 16),
-                child: Text(
-                  'How much?',
-                  style: TextStyle(
-                    color: AppColors.instance.light80,
-                    fontSize: 18,
-                  ),
-                ),
-              ),
-              _AmountTextField(
-                transactionModel: widget.transactionModel,
-              ),
-              const SizedBox(height: 20),
-              Flexible(
-                child: Container(
-                  padding: const EdgeInsets.only(top: 10),
-                  decoration: BoxDecoration(
-                    borderRadius: const BorderRadius.only(
-                      topRight: Radius.circular(32),
-                      topLeft: Radius.circular(32),
-                    ),
-                    color: AppColors.instance.light100,
-                  ),
-                  child: ListView(
-                    shrinkWrap: true,
-                    // physics: const NeverScrollableScrollPhysics(),
-                    padding: const EdgeInsets.only(
-                      top: 24,
-                      right: 16,
-                      left: 16,
-                      bottom: 24,
-                    ),
-                    children: [
-                      _CategoryField(
-                        isExpense: isExpense,
-                        transactionModel: widget.transactionModel,
-                      ),
-                      _DescriptionField(
-                        isExpense: isExpense,
-                        transactionModel: widget.transactionModel,
-                      ),
-                      VGap(3.h),
-                      _ContinueButton(
-                        isExpense: isExpense,
-                        transactionModel: widget.transactionModel,
-                      ),
-                      if (widget.transactionModel != null)
-                        _DeleteButton(
-                          transactionModel: widget.transactionModel!,
-                          showDeleteAlertDialogue: _showDeleteAlertDialogue,
-                        ),
-                      VGap(1.h),
-                    ],
-                  ),
-                ),
-              )
-            ],
-          ),
-        ),
-      ),
+        );
+      },
     );
   }
 }
@@ -259,155 +264,7 @@ class _AmountTextField extends StatelessWidget {
   }
 }
 
-class _CategoryField extends StatefulWidget {
-  const _CategoryField({
-    super.key,
-    required this.isExpense,
-    required this.transactionModel,
-  });
 
-  final bool isExpense;
-  final TransactionModel? transactionModel;
-
-  @override
-  State<_CategoryField> createState() => _CategoryFieldState();
-}
-
-class _CategoryFieldState extends State<_CategoryField> {
-  @override
-  Widget build(BuildContext context) {
-    return BlocBuilder<ExpenseTrackerBloc, ExpenseTrackerState>(
-      builder: (context, state) {
-        final cates = context.read<CategoriesBloc>().state.categories.where((e) => !e.isIncome == widget.isExpense).toList();
-        return Column(
-          mainAxisSize: MainAxisSize.min,
-          crossAxisAlignment: CrossAxisAlignment.start,
-          children: [
-            Padding(
-              padding: EdgeInsets.symmetric(horizontal: 0.5.w),
-              child: Text("Category"),
-            ),
-            VGap(0.3.h),
-            InkWell(
-              onTap: () {
-                FocusManager.instance.primaryFocus?.unfocus();
-                showModalBottomSheet(
-                  context: context,
-                  isScrollControlled: true,
-                  builder: (ctx) {
-                    return Container(
-                      constraints: BoxConstraints(maxHeight: 70.h),
-                      padding: EdgeInsets.symmetric(horizontal: 3.w),
-                      child: BlocBuilder<CategoriesBloc, CategoriesState>(
-                        builder: (ctx, cateState) {
-                          final categories = cateState.categories.where((e) => !e.isIncome == widget.isExpense).toList();
-                          return Column(
-                            mainAxisSize: MainAxisSize.min,
-                            children: [
-                              VGap(3.h),
-                              GridView.count(
-                                shrinkWrap: true,
-                                physics: NeverScrollableScrollPhysics(),
-                                crossAxisCount: 4,
-                                mainAxisSpacing: 3.w,
-                                crossAxisSpacing: 3.w,
-                                children: categories
-                                    .map((e) => InkWell(
-                                          onTap: () {
-                                            context.read<ExpenseTrackerBloc>().add(SetCategoryEvent(category: e));
-                                            ctx.maybePop();
-                                          },
-                                          borderRadius: BorderRadius.circular(10),
-                                          child: Container(
-                                            decoration: BoxDecoration(
-                                                borderRadius: BorderRadius.circular(10),
-                                                color: ((widget.transactionModel == null ? state.category : widget.transactionModel!.category) == e.id)
-                                                    ? widget.isExpense
-                                                        ? AppColors.instance.red20
-                                                        : AppColors.instance.green20
-                                                    : null),
-                                            child: Column(
-                                              mainAxisSize: MainAxisSize.min,
-                                              children: [
-                                                VGap(0.3.h),
-                                                Expanded(
-                                                  child: Image.asset(
-                                                    e.imagePath,
-                                                    fit: BoxFit.fill,
-                                                  ),
-                                                ),
-                                                Padding(
-                                                  padding: EdgeInsets.symmetric(vertical: 0.3.h),
-                                                  child: Text(e.name, style: AppTheme.maybeOf(context)?.typography.regular14, maxLines: 1, overflow: TextOverflow.ellipsis),
-                                                ),
-                                              ],
-                                            ),
-                                          ),
-                                        ))
-                                    .toList(),
-                              ),
-                              OutlinedButton(
-                                  onPressed: () async {
-                                    await AddEditNewCategory(isIncome: !widget.isExpense).showSheet(context);
-                                    context.read<CategoriesBloc>().add(LoadCategoriesEvent());
-                                  },
-                                  child: Text("Add New Category")),
-                              VGap(3.h),
-                            ],
-                          );
-                        },
-                      ),
-                    );
-                  },
-                );
-              },
-              child: Container(
-                height: 6.h,
-                margin: EdgeInsets.only(bottom: 2.h),
-                decoration: BoxDecoration(
-                  border: Border.all(),
-                  borderRadius: BorderRadius.circular(12),
-                ),
-                alignment: Alignment.centerLeft,
-                child: state.category == null
-                    ? Padding(
-                        padding: EdgeInsets.symmetric(horizontal: 3.w),
-                        child: Text("--Select Category--"),
-                      )
-                    : Builder(builder: (context) {
-                        try {
-                          return Row(
-                            children: [
-                              HGap(2.w),
-                              Padding(
-                                padding: EdgeInsets.symmetric(vertical: 0.2.h),
-                                child: AspectRatio(
-                                  aspectRatio: 1,
-                                  child: Image.asset(
-                                    cates.firstWhere((e) => e.id == state.category?.id).imagePath,
-                                    fit: BoxFit.fill,
-                                  ),
-                                ),
-                              ),
-                              Padding(
-                                padding: EdgeInsets.symmetric(horizontal: 2.w),
-                                child: Text(cates.firstWhere((e) => e.id == state.category?.id).name,
-                                    style: AppTheme.maybeOf(context)?.typography.regular14, maxLines: 1, overflow: TextOverflow.ellipsis),
-                              ),
-                            ],
-                          );
-                        } catch (e) {
-                          return Text("Error : $e");
-                        }
-                      }),
-              ),
-            ),
-          ],
-        );
-      },
-    );
-  }
-}
 
 class _DescriptionField extends StatelessWidget {
   const _DescriptionField({

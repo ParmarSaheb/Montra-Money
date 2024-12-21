@@ -9,12 +9,13 @@ import 'package:montra_clone/modules/expense_tracking/models/transaction_model.d
 import 'package:montra_clone/modules/financial_analysis/model/chart_data_model.dart';
 import 'package:montra_clone/modules/financial_analysis/model/doughnut_chart_model.dart';
 
+import '../../categories/models/category_model.dart';
+
 part 'financial_analysis_event.dart';
 
 part 'financial_analysis_state.dart';
 
-class FinancialAnalysisBloc
-    extends Bloc<FinancialAnalysisEvent, FinancialAnalysisState> {
+class FinancialAnalysisBloc extends Bloc<FinancialAnalysisEvent, FinancialAnalysisState> {
   FinancialAnalysisBloc() : super(const FinancialAnalysisState()) {
     on<AnalysisTypeChangeEvent>(_setAnalysisType);
     on<AnalysisFilterChangeEvent>(_setAnalysisFilter);
@@ -22,24 +23,23 @@ class FinancialAnalysisBloc
     on<FetchDataListEvent>(_fetchDataList);
   }
 
-  void _setAnalysisType(
-    AnalysisTypeChangeEvent event,
-    Emitter<FinancialAnalysisState> emit,
-  ) {
+  void _setAnalysisType(AnalysisTypeChangeEvent event,
+      Emitter<FinancialAnalysisState> emit,
+      ) {
     emit(state.copyWith(isAnalysisBudgetType: event.isAnalysisBudgetType));
   }
 
   void _setAnalysisFilter(
-    AnalysisFilterChangeEvent event,
-    Emitter<FinancialAnalysisState> emit,
-  ) {
+      AnalysisFilterChangeEvent event,
+      Emitter<FinancialAnalysisState> emit,
+      ) {
     emit(state.copyWith(analysisFilterType: event.analysisFilter));
   }
 
   void _setDataFilterType(
-    SetFilterTypeEvent event,
-    Emitter<FinancialAnalysisState> emit,
-  ) {
+      SetFilterTypeEvent event,
+      Emitter<FinancialAnalysisState> emit,
+      ) {
     DataFilterType dataFilterType;
     if (event.filterName == 'Month') {
       dataFilterType = DataFilterType.month;
@@ -52,9 +52,9 @@ class FinancialAnalysisBloc
   }
 
   Future<void> _fetchDataList(
-    FetchDataListEvent event,
-    Emitter<FinancialAnalysisState> emit,
-  ) async {
+      FetchDataListEvent event,
+      Emitter<FinancialAnalysisState> emit,
+      ) async {
     try {
       emit(state.copyWith(status: FinancialAnalysisStateStatus.loading));
       List<QueryDocumentSnapshot<Map<String, dynamic>>> querySnapshot;
@@ -63,20 +63,17 @@ class FinancialAnalysisBloc
       } else if (state.dataFilterType == DataFilterType.year) {
         querySnapshot = await FireStoreQueries.instance.getThisYearData();
       } else {
-        querySnapshot =
-            await FireStoreQueries.instance.getThisMonthExpenseIncomeData();
+        querySnapshot = await FireStoreQueries.instance.getThisMonthExpenseIncomeData();
       }
       final List<TransactionModel> dataList = [];
       final List<ChartDataModel> amountList = [];
-      final isExpense =
-          state.analysisFilterType == AnalysisFilter.expense ? true : false;
+      final isExpense = state.analysisFilterType == AnalysisFilter.expense ? true : false;
       for (var snapshot in querySnapshot) {
         if (snapshot.data()['isExpense'] == isExpense) {
           dataList.add(TransactionModel.fromFireStore(snapshot.data()));
           amountList.add(
             ChartDataModel(
-              dateTime: DateTime.fromMillisecondsSinceEpoch(
-                  snapshot.data()['createdAt']),
+              dateTime: DateTime.fromMillisecondsSinceEpoch(snapshot.data()['createdAt']),
               amount: double.parse(snapshot.data()['transactionAmount']),
             ),
           );
@@ -85,69 +82,30 @@ class FinancialAnalysisBloc
 
       final double totalAmount = dataList.fold(
         0,
-        (previousValue, element) =>
-            previousValue + double.parse(element.transactionAmount),
+            (previousValue, element) => previousValue + double.parse(element.transactionAmount),
       );
 
-      final List<String> categoryList = [
-        'Food',
-        'Subscription',
-        'Shopping',
-        'Transportation',
-        'Salary',
-        'Rental Income',
-        'Interest',
-      ];
+      final List<CategoryModel> categoryList = [...event.expenseCategories, ...event.incomeCategories];
+
       final Map<String, double> categoryMap = {};
       for (var category in categoryList) {
-        final double categoryAmount =
-            dataList.where((model) => model.category == category).toList().fold(
-                  0,
-                  (previousValue, element) =>
-                      previousValue + double.parse(element.transactionAmount),
-                );
-        categoryMap[category] = (categoryAmount / totalAmount);
+        final double categoryAmount = dataList.where((model) => model.category == category).toList().fold<double>(
+          0.0,
+              (previousValue, element) => previousValue + double.parse(element.transactionAmount),
+        );
+        categoryMap[category.id] = (categoryAmount / totalAmount);
       }
-      final expenseChartList = [
-        DoughnutChartData(
-          category: 'Subscription',
-          color: AppColors.instance.primary,
-          value: categoryMap['Subscription']!,
-        ),
-        DoughnutChartData(
-          category: 'Shopping',
-          color: AppColors.instance.yellow100,
-          value: categoryMap['Shopping']!,
-        ),
-        DoughnutChartData(
-          category: 'Transportation',
-          color: AppColors.instance.blue100,
-          value: categoryMap['Transportation']!,
-        ),
-        DoughnutChartData(
-          category: 'Food',
-          color: AppColors.instance.red100,
-          value: categoryMap['Food']!,
-        ),
-      ];
+      final expenseChartList = event.expenseCategories.map((e) => DoughnutChartData(
+        category: e,
+        color: [AppColors.instance.primary, AppColors.instance.yellow100,AppColors.instance.blue100,AppColors.instance.red100][event.expenseCategories.indexOf(e)%4],
+        value: categoryMap[e.id]!,
+      )).toList();
 
-      final incomeChartList = [
-        DoughnutChartData(
-          category: 'Salary',
-          color: AppColors.instance.green100,
-          value: categoryMap['Salary']!,
-        ),
-        DoughnutChartData(
-          category: 'Rental Income',
-          color: AppColors.instance.yellow100,
-          value: categoryMap['Rental Income']!,
-        ),
-        DoughnutChartData(
-          category: 'Interest',
-          color: AppColors.instance.blue100,
-          value: categoryMap['Interest']!,
-        )
-      ];
+      final incomeChartList = event.incomeCategories.map((e) => DoughnutChartData(
+        category: e,
+        color: [AppColors.instance.primary, AppColors.instance.yellow100,AppColors.instance.blue100,AppColors.instance.red100][event.incomeCategories.indexOf(e)%4],
+        value: categoryMap[e.id]!,
+      )).toList();
 
       emit(state.copyWith(
         status: FinancialAnalysisStateStatus.success,
